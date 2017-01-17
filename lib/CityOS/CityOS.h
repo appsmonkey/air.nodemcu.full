@@ -10,6 +10,7 @@
 #endif
 
 #include "Config.h"
+#include <ESP8266WiFi.h>
 #include <map>
 #include <vector>
 #include <string>
