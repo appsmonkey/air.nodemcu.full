@@ -10,11 +10,7 @@ CTOS_DHT22::CTOS_DHT22(int cpin)
 }
 
 void CTOS_DHT22::setup()
-{
-    Serial << "IN CTOS_DHT22::setup" << endl;
-}
+{ }
 
 void CTOS_DHT22::loop()
-{
-    Serial << "IN CTOS_DHT22::loop" << endl;
-}
+{ }
