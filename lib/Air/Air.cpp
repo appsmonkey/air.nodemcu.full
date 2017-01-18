@@ -30,11 +30,6 @@ Air::~Air()
 
 void Air::setup()
 {
-    addSensor("temperature_air");
-    addSensor("humidity_air");
-    addSensor("temperature_air_feels-like");
-    // addSensor("humidity_soil_1");
-
     // Start Serials
     Serial.begin(115200); // serial terminal
 
@@ -85,9 +80,6 @@ void Air::setup()
 
     if (debug.wifi || debug.webserver)
         printWifiStatus();
-
-
-    CityOS::setup();
 } /* cos_setup */
 
 void Air::loop()
@@ -126,7 +118,6 @@ void Air::loop()
     // yield() calls on the background functions to allow them to
     // keep WiFi connected, manage the TCP/IP stack, etc
     yield();
-    CityOS::setup();
 } /* cos_loop */
 
 char Air::checkValue(unsigned char * thebuf, char leng)

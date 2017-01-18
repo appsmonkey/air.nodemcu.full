@@ -1,7 +1,10 @@
 #include <CityOS.h>
 
-int CityOS::sensorCount;
-std::map<int, String> CityOS::sensors;
+int CityOS::inputCount;
+int CityOS::outputCount;
+
+std::map<int, String> CityOS::inputs;
+std::map<int, String> CityOS::outputs;
 std::map<int, float> CityOS::values;
 
 CityOS::CityOS()
@@ -18,7 +21,6 @@ CityOS::CityOS()
     api.active   = true;
     api.host     = "ctos.io";
     api.port     = 80;
-    api.token    = "TOKEN_MISSING";
     api.deviceID = 0;
     api.timeout  = 10;
 
@@ -44,9 +46,41 @@ CityOS::~CityOS()
     delete _server;
 }
 
-void CityOS::setup(){ }
+void CityOS::setup()
+{
+    sendSchema();
+}
 
-void CityOS::loop(){ }
+void CityOS::loop()
+{ }
+
+void CityOS::sendSchema()
+{
+    String json = "";
+
+    json += "{";
+
+    bool first = true;
+
+    for (auto const& s : inputs) {
+        if (!first)
+            json += ", ";
+
+        json += "\"";
+        json += s.first;
+        json += "\" : ";
+
+        json += "\"";
+        json += s.second;
+        json += "\"";
+
+        first = false;
+    }
+
+    json += "}";
+
+    if (debug.json) Serial << json.c_str() << endl;
+}
 
 void CityOS::serveHTML()
 {
@@ -286,16 +320,19 @@ int CityOS::getMacINT()
 }
 
 // Used during setup()
-int CityOS::addSensor(String type)
+int CityOS::input(String type)
 {
-    sensorCount++;
-    // std::map < int, String > sensors;
-    sensors[sensorCount] = type;
-    return sensorCount;
+    inputCount++;
+    inputs[inputCount] = type;
+    return outputCount;
+}
 
-    // std::map < int, float > values;
-    // std::map < int, float > getValues();
-    // std::map < int, float > getAndResetValues();
+// Used during setup()
+int CityOS::output(String type)
+{
+    outputCount++;
+    outputs[inputCount] = type;
+    return outputCount;
 }
 
 float CityOS::setValue(int position, float newValue)
@@ -312,4 +349,9 @@ float CityOS::setValue(int position, float newValue)
 
     values[position] = newValue;
     return oldValue;
+}
+
+int CityOS::sensor(void * sensor)
+{
+    // sensors.push_back(sensor);
 }
