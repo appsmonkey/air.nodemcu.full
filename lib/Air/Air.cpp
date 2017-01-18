@@ -76,10 +76,14 @@ void Air::setup()
             << "WEBSERVER: Started on port: " << webserver.port << endl;
     _server->begin();
 
-    delay(5000); // WAIT FOR SERIAL
+    delay(1000); // WAIT FOR SERIAL
 
     if (debug.wifi || debug.webserver)
         printWifiStatus();
+
+    for (auto const& s:sensors) {
+        s->setup();
+    }
 } /* cos_setup */
 
 void Air::loop()
@@ -115,9 +119,12 @@ void Air::loop()
         serveHTML();
 
 
-    // yield() calls on the background functions to allow them to
-    // keep WiFi connected, manage the TCP/IP stack, etc
-    yield();
+    for (auto const& s:sensors) {
+        s->loop();
+        // yield() calls on the background functions to allow them to
+        // keep WiFi connected, manage the TCP/IP stack, etc
+        yield();
+    }
 } /* cos_loop */
 
 char Air::checkValue(unsigned char * thebuf, char leng)
@@ -158,8 +165,11 @@ void Air::readPM()
     _swSer->setTimeout(1500);
 
     // start to read when detect 0x42 (PM)
-    if (!_swSer->find(0x42))
+    if (!_swSer->find(0x42)) {
+        if (debug.errors) Serial
+                << "ERROR: PM Sensor not functional" << endl;
         return;
+    }
 
     unsigned int LENG = 31;
     unsigned char buf[LENG]; // 0x42 + 31 bytes equal to 32 bytes

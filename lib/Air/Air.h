@@ -42,6 +42,8 @@ public:
         int pmTX;  // PM Sensors TX PIN
     } pin;
 
+    void s();
+    void l();
     void setup();
     void loop();
 

@@ -6,7 +6,7 @@ int CityOS::outputCount;
 std::map<int, String> CityOS::inputs;
 std::map<int, String> CityOS::outputs;
 std::map<int, float> CityOS::values;
-std::vector<CityOS*> CityOS::sensors;
+std::vector<CityOS *> CityOS::sensors;
 
 
 CityOS::CityOS()
@@ -27,7 +27,7 @@ CityOS::CityOS()
     api.timeout  = 10;
 
     readings.active   = true;
-    readings.interval = 30;
+    readings.interval = 5;
     // make api.interval 30+ sec - do not go much lower here
     // each client.connect() eats 184 bytes at a time
     // and returns it in few minutes as they timeout

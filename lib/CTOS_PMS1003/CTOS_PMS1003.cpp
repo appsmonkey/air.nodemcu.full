@@ -9,11 +9,7 @@ CTOS_PMS1003::CTOS_PMS1003(int rx, int tx)
 }
 
 void CTOS_PMS1003::setup()
-{
-    Serial << "IN CTOS_PMS1003::setup" << endl;
-}
+{ }
 
 void CTOS_PMS1003::loop()
-{
-    Serial << "IN CTOS_PMS1003::loop" << endl;
-}
+{ }
