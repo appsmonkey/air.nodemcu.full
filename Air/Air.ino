@@ -21,15 +21,15 @@ void setup()
     // air.debug.webserver = true;
     // air.debug.memory = true;
 
-    air.setup();
-    dht.setup();
-    pm.setup();
+    // air.setup();
+    // dht.setup();
+    // pm.setup();
 }
 
 // runs over and over again
 void loop()
 {
-    air.loop();
-    dht.loop();
-    pm.loop();
+    // air.loop();
+    // dht.loop();
+    // pm.loop();
 }

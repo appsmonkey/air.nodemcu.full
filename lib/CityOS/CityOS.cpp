@@ -6,6 +6,8 @@ int CityOS::outputCount;
 std::map<int, String> CityOS::inputs;
 std::map<int, String> CityOS::outputs;
 std::map<int, float> CityOS::values;
+std::vector<CityOS*> CityOS::sensors;
+
 
 CityOS::CityOS()
 {
@@ -351,7 +353,7 @@ float CityOS::setValue(int position, float newValue)
     return oldValue;
 }
 
-int CityOS::sensor(void * sensor)
+int CityOS::sensor(CityOS * sensor)
 {
-    // sensors.push_back(sensor);
+    sensors.push_back(sensor);
 }

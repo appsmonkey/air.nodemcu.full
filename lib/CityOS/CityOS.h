@@ -58,17 +58,17 @@ public:
     } webserver;
 
     // Arduino setup() func
-    void setup();
+    virtual void setup();
 
     // Arduino loop() func
-    void loop();
+    virtual void loop();
 
 protected:
 
     static int inputCount;
     static int outputCount;
 
-    static std::vector < void * > sensors;
+    static std::vector < CityOS * > sensors;
     static std::map < int, String > inputs;
     static std::map < int, String > outputs;
     static std::map < int, float > values;
@@ -88,7 +88,7 @@ protected:
     int output(String type);
 
     // physical sensor
-    int sensor(void *);
+    virtual int sensor(CityOS *);
 
     // Used in Setup - Parse schema JSON and send it to server
     void sendSchema();
