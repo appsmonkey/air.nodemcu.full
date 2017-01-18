@@ -2,8 +2,8 @@
 #define Air_h
 
 #include "CityOS.h"
-#include "NodeMCU.h"
-#include "PMS1003.h"
+#include "CTOS_NodeMCU.h"
+#include "CTOS_PMS1003.h"
 
 #include "Adafruit_Sensor.h"
 #include "SoftwareSerial.h"
@@ -42,6 +42,8 @@ public:
         int pmTX;  // PM Sensors TX PIN
     } pin;
 
+    void s();
+    void l();
     void setup();
     void loop();
 

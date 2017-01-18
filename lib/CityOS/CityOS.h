@@ -23,6 +23,7 @@ public:
     struct _DEBUG {
         bool errors    = false;
         bool readings  = false;
+        bool schema    = false;
         bool api       = false;
         bool webserver = false;
         bool led       = false;
@@ -57,17 +58,19 @@ public:
     } webserver;
 
     // Arduino setup() func
-    void setup();
+    virtual void setup();
 
     // Arduino loop() func
-    void loop();
+    virtual void loop();
 
 protected:
 
-    bool inSetup = true;
-    bool inLoop  = false;
-    static int sensorCount;
-    static std::map < int, String > sensors;
+    static int inputCount;
+    static int outputCount;
+
+    static std::vector < CityOS * > sensors;
+    static std::map < int, String > inputs;
+    static std::map < int, String > outputs;
     static std::map < int, float > values;
 
     std::map < int, float > getAndResetValues();
@@ -80,8 +83,15 @@ protected:
 
     int getSensorCount();
 
-    // Used in Setup
-    static int addSensor(String type);
+    // Every reading is one data point
+    int input(String type);
+    int output(String type);
+
+    // physical sensor
+    virtual int sensor(CityOS *);
+
+    // Used in Setup - Parse schema JSON and send it to server
+    void sendSchema();
 
     // Use in Loop, returns old value
     static float setValue(int position, float newValue);
