@@ -1,5 +1,5 @@
-#ifndef NODEMCU_H
-#define NODEMCU_H
+#ifndef CTOS_NODEMCU_H
+#define CTOS_NODEMCU_H
 
 #include <ESP8266WiFi.h> // ESP8266 Core WiFi Library (you most likely already have this in your sketch)
 
@@ -15,4 +15,4 @@
 #define D9  3  // RX0 (Serial console)
 #define D10 1  // TX0 (Serial console)
 
-#endif /* ifndef NODEMCU_H */
+#endif /* ifndef CTOS_NODEMCU_H */
