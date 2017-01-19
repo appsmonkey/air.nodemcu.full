@@ -27,7 +27,7 @@ CityOS::CityOS()
     api.timeout  = 10;
 
     readings.active   = true;
-    readings.interval = 5;
+    readings.interval = 60;
     // make api.interval 30+ sec - do not go much lower here
     // each client.connect() eats 184 bytes at a time
     // and returns it in few minutes as they timeout

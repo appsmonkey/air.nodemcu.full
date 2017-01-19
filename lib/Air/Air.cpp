@@ -9,13 +9,6 @@ Air::Air()
     pin.green = D5;
     pin.blue  = D6;
 
-    pin.pmRX = D7;
-    pin.pmTX = D8;
-
-    range.pm2_5 = 0;
-    range.pm10  = 0;
-    range.worst = 0;
-
     pinMode(pin.red, OUTPUT);
     pinMode(pin.green, OUTPUT);
     pinMode(pin.blue, OUTPUT);
@@ -51,6 +44,7 @@ void Air::setup()
     int wifi_retry_count = 1;
     int retry_on         = 500;
     while (WiFi.status() != WL_CONNECTED) {
+        yield();
         delay(retry_on);
         if (debug.wifi)
             Serial << ".";
@@ -100,8 +94,6 @@ void Air::loop()
 
         readDHT();
 
-        readPM();
-        setWorstRange();
         setLedColors();
 
 
@@ -111,94 +103,18 @@ void Air::loop()
         // memory leaks check
         if (debug.memory)
             printHeapSize();
-    }
 
-    yield();
-
-    if (webserver.active)
-        serveHTML();
-
-
-    for (auto const& s:sensors) {
-        s->loop();
-        // yield() calls on the background functions to allow them to
-        // keep WiFi connected, manage the TCP/IP stack, etc
-        yield();
-    }
-} /* cos_loop */
-
-char Air::checkValue(unsigned char * thebuf, char leng)
-{
-    char receiveflag = 0;
-    int receiveSum   = 0;
-
-    for (int i = 0; i < (leng - 2); i++) {
-        receiveSum = receiveSum + thebuf[i];
-    }
-    receiveSum = receiveSum + 0x42;
-
-    // check the serial data
-    if (receiveSum == ((thebuf[leng - 2] << 8) + thebuf[leng - 1])) {
-        receiveSum  = 0;
-        receiveflag = 1;
-    }
-    return receiveflag;
-}
-
-int Air::read16Bits(unsigned char * thebuf, int offset)
-{
-    unsigned int PMVal;
-
-    PMVal = ((thebuf[offset] << 8) + thebuf[offset + 1]);
-    return PMVal;
-}
-
-void Air::readPM()
-{
-    SoftwareSerial * _swSer;
-
-    _swSer = new SoftwareSerial(pin.pmRX, pin.pmTX);
-    _swSer->begin(9600); // PM Serial
-    // set the Timeout to 1500ms
-    // longer than the data transmission periodic time of the sensor
-    // which is 1000ms
-    _swSer->setTimeout(1500);
-
-    // start to read when detect 0x42 (PM)
-    if (!_swSer->find(0x42)) {
-        if (debug.errors) Serial
-                << "ERROR: PM Sensor not functional" << endl;
-        return;
-    }
-
-    unsigned int LENG = 31;
-    unsigned char buf[LENG]; // 0x42 + 31 bytes equal to 32 bytes
-
-    _swSer->readBytes(buf, LENG);
-    delete _swSer;
-
-    if (buf[0] == 0x4d) {
-        if (checkValue(buf, LENG)) {
-            // count PM1.0 value of the air detector module
-            sensor.pm1 = read16Bits(buf, 3);
-            if (debug.readings) Serial << "READINGS PM1: " << sensor.pm1 << endl;
-            setValue(4, sensor.pm1);
-
-            // count PM2.5 value of the air detector module
-            sensor.pm2_5 = read16Bits(buf, 5);
-            setPM2_5Range();
-            if (debug.readings) Serial << "READINGS PM2.5: " << sensor.pm2_5 << endl;
-            setValue(5, sensor.pm2_5);
-
-            // count PM10 value of the air detector module
-            sensor.pm10 = read16Bits(buf, 7);
-            setPM10Range();
-            setValue(6, sensor.pm10);
-
-            if (debug.readings) Serial << "READINGS PM10: " << sensor.pm10 << endl;
+        for (auto const& s:sensors) {
+            s->loop();
+            // yield() calls on the background functions to allow them to
+            // keep WiFi connected, manage the TCP/IP stack, etc
+            yield();
         }
     }
-} // Air::readPM
+
+    // if (webserver.active)
+    //  serveHTML();
+} /* cos_loop */
 
 void Air::readDHT()
 {
@@ -224,64 +140,6 @@ void Air::readDHT()
     }
 }
 
-// 0-5
-int Air::setPM2_5Range()
-{
-    // USA
-    int ranges[5] = { 13, 36, 56, 151, 251 };
-
-    // Asia
-    // int ranges[5] = { 30, 60, 90, 120, 250 };
-
-    for (int i = 0; i < sizeof(ranges); i++) {
-        if (sensor.pm2_5 < ranges[i]) {
-            range.pm2_5 = i;
-            return i;
-        }
-    }
-    range.pm2_5 = sizeof(ranges);
-    return range.pm2_5;
-}
-
-int Air::setPM10Range()
-{
-    // USA
-    int ranges[5] = { 55, 155, 255, 355, 425 };
-
-    // Asia
-    // int ranges[5] = { 50, 100, 250, 350, 430 };
-
-    for (int i = 0; i < sizeof(ranges); i++) {
-        if (sensor.pm10 <
-
-          ranges[i])
-        {
-            range.pm10 = i;
-            return i;
-        }
-    }
-
-    range.pm10 = sizeof(ranges);
-    return range.pm10;
-}
-
-int Air::setWorstRange()
-{
-    range.worst = range.pm2_5 > range.pm10 ? range.pm2_5 : range.pm10;
-
-    if (debug.led) {
-        Serial
-            << "LED: PM2.5 value: "
-            << sensor.pm2_5 << " (range: " << range.pm2_5 << ")" << endl
-            << "LED: PM10 value: "
-            << sensor.pm10 << " (range: " << range.pm10 << ")" << endl
-            << "LED: worst range: "
-            << range.worst << endl;
-    }
-
-    return range.worst;
-}
-
 void Air::setLedColors()
 {
     static int last_range = -1;
@@ -299,24 +157,25 @@ void Air::setLedColors()
         {  255,   1,   1 }  // red
     };
 
-    if (range.worst >= sizeof(colors))
-        range.worst = sizeof(colors) - 1;
+    if (values[7] >= sizeof(colors))
+        values[7] = sizeof(colors) - 1;
 
-    int red   = map(colors[range.worst][0], 0, 255, 0, 1023);
-    int green = map(colors[range.worst][1], 0, 255, 0, 1023);
-    int blue  = map(colors[range.worst][2], 0, 255, 0, 1023);
+    int current_range = values[7];
+    int red   = map(colors[current_range][0], 0, 255, 0, 1023);
+    int green = map(colors[current_range][1], 0, 255, 0, 1023);
+    int blue  = map(colors[current_range][2], 0, 255, 0, 1023);
 
     if (debug.led) {
         Serial
-            << "LED INFO: Printing for range: " << range.worst << endl
-            << "red: " << red << "[" << colors[range.worst][0] << "]"
-            << " green: " << green << "[" << colors[range.worst][1] << "]"
-            << " blue: " << blue << "[" << colors[range.worst][2] << "]" << endl;
+            << "LED INFO: Printing for range: " << current_range << endl
+            << "red: " << red << "[" << colors[current_range][0] << "]"
+            << " green: " << green << "[" << colors[current_range][1] << "]"
+            << " blue: " << blue << "[" << colors[current_range][2] << "]" << endl;
     }
 
     analogWrite(pin.red, red);
     analogWrite(pin.green, green);
     analogWrite(pin.blue, blue);
 
-    last_range = range.worst;
+    last_range = current_range;
 } // Air::setLedColors

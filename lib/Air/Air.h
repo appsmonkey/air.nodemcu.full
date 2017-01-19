@@ -3,10 +3,8 @@
 
 #include "CityOS.h"
 #include "CTOS_NodeMCU.h"
-#include "CTOS_PMS1003.h"
 
 #include "Adafruit_Sensor.h"
-#include "SoftwareSerial.h"
 #include "DHT.h"
 
 
@@ -20,43 +18,25 @@ public:
         float humidity;
         float temperature;
         float feelsLike;
-
-        // PM Sensor
-        int   pm1;
-        int   pm2_5;
-        int   pm10;
     } sensor;
-
-    struct _RANGE {
-        int pm2_5;
-        int pm10;
-        int worst;
-    } range;
 
     struct _PIN {
         int dht;   // DHT Sensor
         int red;   // Led PIN
         int green; // Led PIN
         int blue;  // Led PIN
-        int pmRX;  // PM Sensors RX PIN
-        int pmTX;  // PM Sensors TX PIN
     } pin;
 
-    void s();
-    void l();
     void setup();
     void loop();
 
 private:
 
-    void readPM();
     void readDHT();
 
     void setPMSerial(int rxPin, int txPin);
 
     DHT * _dht;
-
-    char checkValue(unsigned char * thebuf, char leng);
 
     // 0-5
     int setPM2_5Range();
@@ -72,7 +52,6 @@ private:
 // END OF Air
 
 #endif /* ifndef Air_h */
-
 
 /*
  * {
