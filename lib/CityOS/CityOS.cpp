@@ -26,7 +26,7 @@ CityOS::CityOS()
     // each client.connect() eats 184 bytes at a time
     // and returns it in few minutes as they timeout
 
-    webserver.active = true;
+    webserver.active = false;
     webserver.port   = 80;
 
     wifi.ssid = WIFI_SSID;
@@ -99,7 +99,8 @@ void CityOS::setup()
     }
 
     // Send Schema to server
-    sendSchema();
+    if (api.active)
+        sendSchema();
 } // CityOS::setup
 
 void CityOS::loop()
@@ -124,6 +125,12 @@ void CityOS::loop()
             yield();
         }
 
+        if (debug.inputs)
+            printInputValues();
+
+        if (debug.outputs)
+            printOutputValues();
+
         if (api.active)
             sendData();
 
@@ -132,8 +139,8 @@ void CityOS::loop()
             printHeapSize();
     }
 
-    // if (webserver.active)
-    //  serveHTML();
+    if (webserver.active)
+        serveHTML();
 } // CityOS::loop
 
 void CityOS::sendSchema()
@@ -252,10 +259,6 @@ void CityOS::sendData()
 
     if (debug.json) Serial << json.c_str() << endl;
 
-    if (debug.inputs)
-        printInputValues();
-    // try to reuse connection to save memory
-
     String hostPort = api.host + ":" + api.port;
 
     if (_client.connected()) {
@@ -336,6 +339,27 @@ void CityOS::printInputValues()
         Serial << count << ". " << input << ": ";
 
         float value = inputValues[input];
+        int si      = ceilf(value);
+        if (value == si)
+            Serial << si;
+        else
+            Serial << value;
+
+        Serial << endl;
+        count++;
+    }
+    Serial << " - -  - -  - -  - -  " << endl;
+}
+
+void CityOS::printOutputValues()
+{
+    Serial << endl << "OUTPUTS | Data points: " << endl;
+    Serial << " - -  - -  - -  - -  " << endl;
+    int count = 1;
+    for (auto const& output : outputs) {
+        Serial << count << ". " << output << ": ";
+
+        float value = outputValues[output];
         int si      = ceilf(value);
         if (value == si)
             Serial << si;
@@ -480,11 +504,11 @@ float CityOS::setOutputValue(String type, float newValue)
     float oldValue = 0;
 
     // check for exiting data
-    it = inputValues.find(type);
+    it = outputValues.find(type);
     if (it != inputValues.end())
-        oldValue = inputValues[type];
+        oldValue = outputValues[type];
 
-    inputValues[type] = newValue;
+    outputValues[type] = newValue;
     return oldValue;
 }
 

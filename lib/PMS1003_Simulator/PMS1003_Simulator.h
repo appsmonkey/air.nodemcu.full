@@ -1,24 +1,26 @@
-#ifndef PMS1003_CTOS_H
-#define PMS1003_CTOS_H
+#ifndef PMS1003_SIM_H
+#define PMS1003_SIM_H
 
 #include <CityOS.h>
 #include "SoftwareSerial.h"
 
 
-class PMS1003: public CityOS {
+class PMS1003_SIM: public CityOS {
 public:
 
-    PMS1003(int rx, int tx);
+    PMS1003_SIM();
 
 private:
 
     void setup();
     void loop();
 
-    struct _PIN {
-        int rx; // PM Sensors RX PIN
-        int tx; // PM Sensors TX PIN
-    } pin;
+    struct _IN {
+        // PM Sensor
+        int pm1;
+        int pm2_5;
+        int pm10;
+    } in;
 
     char checkValue(unsigned char * thebuf, char leng);
     int read16Bits(unsigned char * thebuf, int offset);

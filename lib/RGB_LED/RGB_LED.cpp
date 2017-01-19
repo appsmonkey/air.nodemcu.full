@@ -10,6 +10,8 @@ RGB_LED::RGB_LED(int red, int green, int blue)
     pinMode(pin.green, OUTPUT);
     pinMode(pin.blue, OUTPUT);
 
+    listen = "air aqi";
+
     sense(this);
 }
 
@@ -25,9 +27,31 @@ void RGB_LED::loop()
 {
     static int last_range = -1;
 
+    if (!listen.length()) {
+        if (debug) {
+            Serial
+                << "RGB LED | Listening not set " << endl
+                << "RGB LED | Use led.listen = \"range name\" to set it." << endl;
+        }
+        return;
+    }
+
+    if (debug) {
+        Serial
+            << "RGB LED | Listening set to: " << listen << endl;
+    }
+
+    int current_range = outputValues[listen];
+
     // no need to update if same as last
-    // if (range.worst == last_range)
-    // return;
+    if (current_range == last_range) {
+        if (debug) {
+            Serial
+                << "RGB LED | Range " << listen
+                << "same as last time - nothing to do" << endl;
+        }
+        return;
+    }
 
     int colors[6][3] = {
         {    1, 200, 255 }, // blue
@@ -35,20 +59,19 @@ void RGB_LED::loop()
         {  245,  90,   1 }, // yellow
         {  255,  40,   1 }, // orange
         {  255,   1, 170 }, // purple
-        {  255,   1,   1 }  // red
+        {  255,   1,   1 } // red
     };
 
-    if (inputValues["air|aqi"] >= sizeof(colors))
-        inputValues["air|aqi"] = sizeof(colors) - 1;
+    if (current_range >= sizeof(colors))
+        current_range = sizeof(colors) - 1;
 
-    int current_range = inputValues["air|aqi"];
     int red   = map(colors[current_range][0], 0, 255, 0, 1023);
     int green = map(colors[current_range][1], 0, 255, 0, 1023);
     int blue  = map(colors[current_range][2], 0, 255, 0, 1023);
 
     if (debug) {
         Serial
-            << "LED INFO: Printing for range: " << current_range << endl
+            << "RGB LED | Printing for range: " << current_range << endl
             << "red: " << red << "[" << colors[current_range][0] << "]"
             << " green: " << green << "[" << colors[current_range][1] << "]"
             << " blue: " << blue << "[" << colors[current_range][2] << "]" << endl;

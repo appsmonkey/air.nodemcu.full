@@ -46,10 +46,17 @@ void PMS1003::loop()
 
     if (buf[0] == 0x4d) {
         if (checkValue(buf, LENG)) {
-            setInputValue("air pm 1", read16Bits(buf, 3));
-            setInputValue("air pm 2.5", read16Bits(buf, 7));
-            setInputValue("air pm 10", read16Bits(buf, 7));
+            // Read PM values of the air pm sensor
+            in.pm1   = read16Bits(buf, 3);
+            in.pm2_5 = read16Bits(buf, 5);
+            in.pm10  = read16Bits(buf, 7);
 
+            setInputValue("air pm 1", in.pm1);
+            setInputValue("air pm 2.5", in.pm2_5);
+            setInputValue("air pm 10", in.pm10);
+
+            setPM2_5Range();
+            setPM10Range();
             setWorstRange();
         }
     }
@@ -92,7 +99,7 @@ void PMS1003::setPM2_5Range()
     // int ranges[5] = { 30, 60, 90, 120, 250 };
 
     for (int i = 0; i < sizeof(ranges); i++)
-        if (inputValues["air pm 2.5"] < ranges[i]) {
+        if (in.pm2_5 < ranges[i]) {
             setOutputValue("air pm 2.5 range", i);
             return;
         }
@@ -108,7 +115,7 @@ void PMS1003::setPM10Range()
     // int ranges[5] = { 50, 100, 250, 350, 430 };
 
     for (int i = 0; i < sizeof(ranges); i++)
-        if (inputValues["air pm 10"] < ranges[i]) {
+        if (in.pm10 < ranges[i]) {
             setOutputValue("air pm 10 range", i);
             return;
         }
@@ -118,15 +125,13 @@ void PMS1003::setPM10Range()
 
 void PMS1003::setWorstRange()
 {
-    setPM2_5Range();
-    setPM10Range();
-
     int r2_5 = outputValues["air pm 2.5 range"];
     int r10  = outputValues["air pm 10 range"];
 
     int range = r2_5 > r10 ? r2_5 : r10;
 
     setOutputValue("air aqi range", range);
+
 
     /*
      * {

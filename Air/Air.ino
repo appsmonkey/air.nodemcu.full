@@ -22,9 +22,11 @@ RGB_LED led(D2, D5, D6);
 // setup runs once
 void setup()
 {
-    ctos.debug.inputs = true;
-
+    led.listen = "air aqi";
     // led.debug = true;
+
+    ctos.debug.inputs  = true;
+    ctos.debug.outputs = true;
 
     // Initialize framework setups
     ctos.setup();
