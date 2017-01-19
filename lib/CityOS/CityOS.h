@@ -30,6 +30,8 @@ public:
         bool wifi      = false;
         bool json      = false;
         bool memory    = false;
+        bool inputs    = false;
+        bool outputs   = false;
     } debug;
 
     struct _API {
@@ -65,17 +67,16 @@ public:
 
 protected:
 
-    static int inputCount;
-    static int outputCount;
+    static std::vector < CityOS * > senses;
+    static std::vector < CityOS * > controls;
 
-    static std::vector < CityOS * > sensors;
-    static std::map < int, String > inputs;
-    static std::map < int, String > outputs;
-    static std::map < int, float > values;
+    static std::vector < String > inputs;
+    static std::vector < String > outputs;
+
+    static std::map < String, float > inputValues;
+    static std::map < String, float > outputValues;
 
     std::map < int, float > getAndResetValues();
-
-    void readSensors();
 
     // Debug Info function
     String getMacHEX();
@@ -88,13 +89,14 @@ protected:
     int output(String type);
 
     // physical sensor
-    virtual int sensor(CityOS *);
+    virtual int sense(CityOS *);
+    virtual int control(CityOS *);
 
     // Used in Setup - Parse schema JSON and send it to server
     void sendSchema();
 
     // Use in Loop, returns old value
-    static float setValue(int position, float newValue);
+    static float setValue(String input, float newValue);
     static std::map < int, float > getValues();
 
     WiFiServer * _server;
@@ -109,6 +111,7 @@ protected:
     ////Debug Info Functions
     void printWifiStatus();
     void printHeapSize();
+    void printInputValues();
 };
 
 // - - - - - - - - - - - - - //

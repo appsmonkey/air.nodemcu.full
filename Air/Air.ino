@@ -1,31 +1,45 @@
-#include "Air.h"
-#include "CTOS_NodeMCU.h"
-#include "CTOS_DHT22.h"
+// Load CityOS framework first
+#include "CityOS.h"
+
+// We are using NodeMCU v2 board
+#include "NodeMCU.h"
+
+// Add inputs (sensors) header files
+#include "DHT22_CityOS.h"
 #include "PMS1003.h"
 
-CTOS_DHT22 dht(D5);
+// Add output
+#include "RGB_LED.h"
+
+// Accesss to all data
+CityOS ctos;
+
+// Initialize PINS on all inputs and outputs
+DHT22_CityOS dht(D1);
 PMS1003 pm(D7, D8);
+RGB_LED led(D2, D5, D6);
 
-Air air;
-
-// runs once
+// setup runs once
 void setup()
 {
-    air.debug.errors = true;
+    ctos.debug.errors = true;
     // air.debug.readings = true;
     // air.debug.led      = true;
-    air.debug.wifi = true;
+    // ctos.debug.wifi = true;
     // air.debug.api       = true;
-    air.debug.schema = true;
-    air.debug.json   = true;
+    // ctos.debug.schema = true;
+    // ctos.debug.json   = true;
     // air.debug.webserver = true;
     // air.debug.memory = true;
+    ctos.debug.inputs = true;
 
-    air.setup();
+    // Initialize framework setups
+    ctos.setup();
 }
 
 // runs over and over again
 void loop()
 {
-    air.loop();
+    // Initialize framework loops
+    ctos.loop();
 }

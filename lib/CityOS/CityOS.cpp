@@ -1,24 +1,18 @@
 #include <CityOS.h>
 
-int CityOS::inputCount;
-int CityOS::outputCount;
 
-std::map<int, String> CityOS::inputs;
-std::map<int, String> CityOS::outputs;
-std::map<int, float> CityOS::values;
-std::vector<CityOS *> CityOS::sensors;
+std::vector<String> CityOS::inputs;
+std::vector<String> CityOS::outputs;
 
+std::map<String, float> CityOS::inputValues;
+std::map<String, float> CityOS::outputValues;
+
+std::vector<CityOS *> CityOS::senses;
+std::vector<CityOS *> CityOS::controls;
 
 CityOS::CityOS()
 {
     debug.errors = true;
-    // debug.readings = true;
-    // debug.led      = true;
-    // debug.wifi = true;
-    // debug.api       = true;
-    // debug.json = true;
-    // debug.webserver = true;
-    // debug.memory = true;
 
     api.active   = true;
     api.host     = "ctos.io";
@@ -28,7 +22,7 @@ CityOS::CityOS()
 
     readings.active   = true;
     readings.interval = 60;
-    // make api.interval 30+ sec - do not go much lower here
+    // make api.interval 30+ sec for production - do not go much lower here
     // each client.connect() eats 184 bytes at a time
     // and returns it in few minutes as they timeout
 
@@ -50,39 +44,133 @@ CityOS::~CityOS()
 
 void CityOS::setup()
 {
+    // Start Serials
+    Serial.begin(115200); // serial terminal
+
+    // Connect to WiFi network
+    if (debug.wifi) Serial
+            << "WIFI: Connecting to ssid:" << wifi.ssid << " wireless net." << endl;
+
+
+    WiFi.begin(wifi.ssid.c_str(), wifi.pass.c_str());
+
+    int wifi_retry_count = 1;
+    int retry_on         = 500;
+    while (WiFi.status() != WL_CONNECTED) {
+        yield();
+        delay(retry_on);
+        if (debug.wifi)
+            Serial << ".";
+
+        // Make sure you notify if WIFI is not connecting
+        // notify every 20 attempts
+        if (debug.errors && (wifi_retry_count % 20 == 0 )) {
+            Serial
+                << "wifi ssid: " << wifi.ssid << " still NOT connected." << endl
+                << "Retring for: "
+                << (wifi_retry_count * retry_on) / 1000 << " seconds." << endl;
+        }
+        wifi_retry_count++;
+    }
+
+    if (debug.wifi && (wifi_retry_count > 1)) Serial
+            << "connected." << endl;
+
+    // Starting the web server
+    if (debug.webserver) Serial
+            << "WEBSERVER: Started on port: " << webserver.port << endl;
+    _server->begin();
+
+    delay(1000); // WAIT FOR SERIAL
+
+    if (debug.wifi || debug.webserver)
+        printWifiStatus();
+
+    api.deviceID = getMacINT();
+
+    for (auto const& s:senses) {
+        s->setup();
+        yield();
+    }
+
+    for (auto const& c:controls) {
+        c->setup();
+        yield();
+    }
+
+    // Send Schema to server
     sendSchema();
-}
+} // CityOS::setup
 
 void CityOS::loop()
-{ }
+{
+    static unsigned long OledTimer = millis();
+    static bool first = true;
+
+    if (readings.active &&
+      (first || millis() - OledTimer > (readings.interval * 1000)))
+    {
+        // update right away - no wait on first time
+        first     = false;
+        OledTimer = millis();
+
+        for (auto const& s:senses) {
+            s->loop();
+            yield();
+        }
+
+        for (auto const& c:controls) {
+            c->loop();
+            yield();
+        }
+
+        if (api.active)
+            sendData();
+
+        // memory leaks check
+        if (debug.memory)
+            printHeapSize();
+    }
+
+    // if (webserver.active)
+    //  serveHTML();
+} // CityOS::loop
 
 void CityOS::sendSchema()
 {
     String json = "";
 
-    json += "{";
+    json += "{\n";
 
-    bool first = true;
-
-    for (auto const& s : inputs) {
-        if (!first)
-            json += ", ";
+    int count = 1;
+    for (auto const& input : inputs) {
+        if (count > 1)
+            json += ",\n";
 
         json += "\"";
-        json += s.first;
+        json += count;
         json += "\" : ";
 
         json += "\"";
-        json += s.second;
+        json += input;
         json += "\"";
-
-        first = false;
+        count++;
     }
 
-    json += "}";
+    json += "\n}\n";
 
-    if (debug.json) Serial << json.c_str() << endl;
-}
+    if (debug.json) Serial
+            << "JSON| Schema: " << json.c_str() << endl;
+
+    if (debug.inputs) {
+        Serial << "INPUTS | Data points set: " << endl;
+        count = 1;
+        for (auto const& input : inputs) {
+            Serial << "INPUTS | " << count << ". " << input << endl;
+            count++;
+        }
+    }
+} // CityOS::sendSchema
 
 void CityOS::serveHTML()
 {
@@ -112,7 +200,7 @@ void CityOS::serveHTML()
 
                 client << "<h1>Sensors</h1>" << nl;
 
-                for (auto const& r : values)
+                for (auto const& r : inputValues)
                     client << "<p>" << r.first << ": " << r.second << endl;
 
                 client << HTMLFoot();
@@ -140,30 +228,32 @@ void CityOS::sendData()
 
     json += "{";
 
-    bool first = true;
-
-    for (auto const& r : values) {
-        if (!first)
+    int count = 1;
+    for (auto const& input : inputs) {
+        if (count > 1)
             json += ", ";
 
         json += "\"";
-        json += r.first;
+        json += count;
         json += "\" : ";
 
+        float value = inputValues[input];
         // Optimize traffic -- striping zeros on doubles castable to integer
-        int si = ceilf(r.second);
-        if (r.second == si)
+        int si = ceilf(value);
+        if (value == si)
             json += si;
         else
-            json += r.second;
+            json += value;
 
-        first = false;
+        count++;
     }
 
     json += "}";
 
     if (debug.json) Serial << json.c_str() << endl;
 
+    if (debug.inputs)
+        printInputValues();
     // try to reuse connection to save memory
 
     String hostPort = api.host + ":" + api.port;
@@ -228,7 +318,7 @@ void CityOS::sendData()
     if (debug.api)
         Serial << endl;
 
-    // DO not disconnect - will try to reuse connection to save some memory
+    // DO not disconnect - reuse connection to save some memory
     // _client.stop();
 
     if (debug.api) {
@@ -236,6 +326,27 @@ void CityOS::sendData()
             << "API: connection to: " << hostPort << "closed." << endl;
     }
 } // CityOS::sendData
+
+void CityOS::printInputValues()
+{
+    Serial << endl << "INPUTS | Data points: " << endl;
+    Serial << "  - -  - -  - -  - -  " << endl << endl;
+    int count = 1;
+    for (auto const& input : inputs) {
+        Serial << count << ". " << input << ": ";
+
+        float value = inputValues[input];
+        int si      = ceilf(value);
+        if (value == si)
+            Serial << si;
+        else
+            Serial << value;
+
+        Serial << endl;
+        count++;
+    }
+    Serial << " - -  - -  - -  - -  " << endl;
+}
 
 const char * CityOS::HTMLHead()
 {
@@ -324,36 +435,39 @@ int CityOS::getMacINT()
 // Used during setup()
 int CityOS::input(String type)
 {
-    inputCount++;
-    inputs[inputCount] = type;
-    return outputCount;
+    inputs.push_back(type);
+    return inputs.size();
 }
 
 // Used during setup()
 int CityOS::output(String type)
 {
-    outputCount++;
-    outputs[inputCount] = type;
-    return outputCount;
+    outputs.push_back(type);
+    return outputs.size();
 }
 
-float CityOS::setValue(int position, float newValue)
+float CityOS::setValue(String type, float newValue)
 {
-    std::map<int, float>::iterator it;
+    std::map<String, float>::iterator it;
 
     // if value on this case was never set return 0
     float oldValue = 0;
 
     // check for exiting data
-    it = values.find(position);
-    if (it != values.end())
-        oldValue = values[position];
+    it = inputValues.find(type);
+    if (it != inputValues.end())
+        oldValue = inputValues[type];
 
-    values[position] = newValue;
+    inputValues[type] = newValue;
     return oldValue;
 }
 
-int CityOS::sensor(CityOS * sensor)
+int CityOS::sense(CityOS * sensor)
 {
-    sensors.push_back(sensor);
+    senses.push_back(sensor);
+}
+
+int CityOS::control(CityOS * control)
+{
+    controls.push_back(control);
 }

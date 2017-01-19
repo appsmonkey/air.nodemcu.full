@@ -3,11 +3,11 @@
 
 PMS1003::PMS1003(int rx, int tx)
 {
-    input("air.pm_1");
-    input("air.pm_2_5");
-    input("air.pm_10");
-    input("air.aqi");
-    sensor(this);
+    input("air|pm_1");
+    input("air|pm_2_5");
+    input("air|pm_10");
+    input("air|aqi");
+    sense(this);
 
     pin.pmRX = D7;
     pin.pmTX = D8;
@@ -48,24 +48,20 @@ void PMS1003::loop()
         if (checkValue(buf, LENG)) {
             // count PM1.0 value of the air detector module
             in.pm1 = read16Bits(buf, 3);
-            if (debug.readings) Serial << "READINGS PM1: " << in.pm1 << endl;
-            setValue(4, in.pm1);
+            setValue("air|pm_1", in.pm1);
 
             // count PM2.5 value of the air detector module
             in.pm2_5 = read16Bits(buf, 5);
+            setValue("air|pm_2_5", in.pm2_5);
             setPM2_5Range();
-            if (debug.readings) Serial << "READINGS PM2.5: " << in.pm2_5 << endl;
-            setValue(5, in.pm2_5);
 
             // count PM10 value of the air detector module
             in.pm10 = read16Bits(buf, 7);
+            setValue("air|pm_10", in.pm10);
             setPM10Range();
-            setValue(6, in.pm10);
-
-            if (debug.readings) Serial << "READINGS PM10: " << in.pm10 << endl;
+            setWorstRange();
         }
     }
-    setWorstRange();
 } // PMS1003::loop
 
 char PMS1003::checkValue(unsigned char * thebuf, char leng)
@@ -136,7 +132,7 @@ int PMS1003::setWorstRange()
 {
     in.range = range.pm2_5 > range.pm10 ? range.pm2_5 : range.pm10;
 
-    setValue(7, in.range);
+    setValue("air|aqi", in.range);
     if (debug.led) {
         Serial
             << "LED: PM2.5 value: "
