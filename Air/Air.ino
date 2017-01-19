@@ -22,7 +22,7 @@ RGB_LED led(D2, D5, D6);
 // setup runs once
 void setup()
 {
-    led.listen = "air aqi";
+    led.listen = "air aqi range";
     // led.debug = true;
 
     ctos.debug.inputs  = true;
