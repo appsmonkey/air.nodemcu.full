@@ -46,7 +46,7 @@ void RGB_LED::loop()
     int green = map(colors[current_range][1], 0, 255, 0, 1023);
     int blue  = map(colors[current_range][2], 0, 255, 0, 1023);
 
-    if (debug.led) {
+    if (debug) {
         Serial
             << "LED INFO: Printing for range: " << current_range << endl
             << "red: " << red << "[" << colors[current_range][0] << "]"

@@ -3,18 +3,18 @@
 
 PMS1003::PMS1003(int rx, int tx)
 {
-    input("air|pm_1");
-    input("air|pm_2_5");
-    input("air|pm_10");
-    input("air|aqi");
+    input("air pm 1");
+    input("air pm 2.5");
+    input("air pm 10");
+
+    output("air aqi range");
+    output("air pm 2.5 range");
+    output("air pm 10 range");
+
     sense(this);
 
     pin.pmRX = D7;
     pin.pmTX = D8;
-
-    range.pm2_5 = 0;
-    range.pm10  = 0;
-    range.worst = 0;
 }
 
 void PMS1003::setup()
@@ -48,16 +48,16 @@ void PMS1003::loop()
         if (checkValue(buf, LENG)) {
             // count PM1.0 value of the air detector module
             in.pm1 = read16Bits(buf, 3);
-            setValue("air|pm_1", in.pm1);
+            setInputValue("air pm 1", in.pm1);
 
             // count PM2.5 value of the air detector module
             in.pm2_5 = read16Bits(buf, 5);
-            setValue("air|pm_2_5", in.pm2_5);
+            setInputValue("air pm 2.5", in.pm2_5);
             setPM2_5Range();
 
             // count PM10 value of the air detector module
             in.pm10 = read16Bits(buf, 7);
-            setValue("air|pm_10", in.pm10);
+            setInputValue("air pm 10", in.pm10);
             setPM10Range();
             setWorstRange();
         }
@@ -101,7 +101,7 @@ int PMS1003::setPM2_5Range()
 
     for (int i = 0; i < sizeof(ranges); i++) {
         if (in.pm2_5 < ranges[i]) {
-            range.pm2_5 = i;
+            setOutputValue("air pm 2.5 range", i);
             return i;
         }
     }
@@ -119,7 +119,7 @@ int PMS1003::setPM10Range()
 
     for (int i = 0; i < sizeof(ranges); i++) {
         if (in.pm10 < ranges[i]) {
-            range.pm10 = i;
+            setOutputValue("air pm 10 range", i);
             return i;
         }
     }
@@ -130,18 +130,11 @@ int PMS1003::setPM10Range()
 
 int PMS1003::setWorstRange()
 {
-    in.range = range.pm2_5 > range.pm10 ? range.pm2_5 : range.pm10;
+    int r2_5 = outputValues["air pm 2.5 range"];
+    int r10  = outputValues["air pm 10 range"];
 
-    setValue("air|aqi", in.range);
-    if (debug.led) {
-        Serial
-            << "LED: PM2.5 value: "
-            << in.pm2_5 << " (range: " << range.pm2_5 << ")" << endl
-            << "LED: PM10 value: "
-            << in.pm10 << " (range: " << range.pm10 << ")" << endl
-            << "LED: worst range: "
-            << range.worst << endl;
-    }
+    int range = r2_5 > r10 ? r2_5 : r10;
 
-    return range.worst;
+    setOutputValue("air aqi range", range);
+    return range;
 }

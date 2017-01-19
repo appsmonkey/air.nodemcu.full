@@ -5,9 +5,9 @@ DHT22_CityOS::DHT22_CityOS(int cpin = D1)
     pin.dht = cpin;
     _dht    = new DHT(pin.dht, DHT22);
 
-    input("air|temperature");
-    input("air|humidity");
-    input("air|temperature_feel");
+    input("air temperature");
+    input("air humidity");
+    input("air temperature_feel");
     sense(this);
 }
 
@@ -39,13 +39,8 @@ void DHT22_CityOS::loop()
     } else {
         // Computes temperature values in Celsius and Humidity
         in.temperature_feel = _dht->computeHeatIndex(in.temperature, in.humidity, false);
-        if (debug.readings) {
-            Serial << "READINGS| Temperature: " << in.temperature << endl;
-            Serial << "READINGS| Humidity: " << in.humidity << endl;
-            Serial << "READINGS| Feels Like: " << in.temperature_feel << endl;
-        }
-        setValue("air|temperature", in.temperature);
-        setValue("air|humidity", in.humidity);
-        setValue("air|temperature_feel", in.temperature_feel);
     }
+    setInputValue("air temperature", in.temperature);
+    setInputValue("air humidity", in.humidity);
+    setInputValue("air temperature_feel", in.temperature_feel);
 }

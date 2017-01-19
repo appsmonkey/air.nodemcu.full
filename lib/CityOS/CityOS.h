@@ -22,11 +22,9 @@ public:
 
     struct _DEBUG {
         bool errors    = false;
-        bool readings  = false;
         bool schema    = false;
         bool api       = false;
         bool webserver = false;
-        bool led       = false;
         bool wifi      = false;
         bool json      = false;
         bool memory    = false;
@@ -96,7 +94,12 @@ protected:
     void sendSchema();
 
     // Use in Loop, returns old value
-    static float setValue(String input, float newValue);
+    static int setInputValue(String input, int newValue);
+    static int setOutputValue(String input, int newValue);
+
+    static float setInputValue(String input, float newValue);
+    static float setOutputValue(String input, float newValue);
+
     static std::map < int, float > getValues();
 
     WiFiServer * _server;

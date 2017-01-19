@@ -5,6 +5,7 @@
 
 class RGB_LED: public CityOS {
 public:
+    bool debug = false;
 
     struct _PIN {
         int red;   // Led PIN

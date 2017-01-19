@@ -22,16 +22,9 @@ RGB_LED led(D2, D5, D6);
 // setup runs once
 void setup()
 {
-    ctos.debug.errors = true;
-    // air.debug.readings = true;
-    // air.debug.led      = true;
-    // ctos.debug.wifi = true;
-    // air.debug.api       = true;
-    // ctos.debug.schema = true;
-    // ctos.debug.json   = true;
-    // air.debug.webserver = true;
-    // air.debug.memory = true;
     ctos.debug.inputs = true;
+
+    // led.debug = true;
 
     // Initialize framework setups
     ctos.setup();

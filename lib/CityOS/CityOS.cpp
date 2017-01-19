@@ -330,7 +330,7 @@ void CityOS::sendData()
 void CityOS::printInputValues()
 {
     Serial << endl << "INPUTS | Data points: " << endl;
-    Serial << "  - -  - -  - -  - -  " << endl << endl;
+    Serial << " - -  - -  - -  - -  " << endl;
     int count = 1;
     for (auto const& input : inputs) {
         Serial << count << ". " << input << ": ";
@@ -446,7 +446,33 @@ int CityOS::output(String type)
     return outputs.size();
 }
 
-float CityOS::setValue(String type, float newValue)
+int CityOS::setInputValue(String type, int newValue)
+{
+    return setInputValue(type, (float) newValue);
+}
+
+float CityOS::setInputValue(String type, float newValue)
+{
+    std::map<String, float>::iterator it;
+
+    // if value on this case was never set return 0
+    float oldValue = 0;
+
+    // check for exiting data
+    it = inputValues.find(type);
+    if (it != inputValues.end())
+        oldValue = inputValues[type];
+
+    inputValues[type] = newValue;
+    return oldValue;
+}
+
+int CityOS::setOutputValue(String type, int newValue)
+{
+    return setOutputValue(type, (float) newValue);
+}
+
+float CityOS::setOutputValue(String type, float newValue)
 {
     std::map<String, float>::iterator it;
 
