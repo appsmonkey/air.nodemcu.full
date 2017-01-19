@@ -47,7 +47,7 @@ void PMS1003::loop()
     if (buf[0] == 0x4d) {
         if (checkValue(buf, LENG)) {
             setInputValue("air pm 1", read16Bits(buf, 3));
-            setInputValue("air pm 2.5", read16Bits(buf, 7));
+            setInputValue("air pm 2.5", read16Bits(buf, 5));
             setInputValue("air pm 10", read16Bits(buf, 7));
 
             setWorstRange();
@@ -84,7 +84,6 @@ int PMS1003::read16Bits(unsigned char * thebuf, int offset)
 // 0-5
 void PMS1003::setPM2_5Range()
 {
-    Serial << "IN PMS1003::setPM2_5Range" << endl;
     // USA
     int ranges[5] = { 13, 36, 56, 151, 251 };
 
