@@ -1,14 +1,14 @@
-#ifndef PMS1003_CTOS_H
-#define PMS1003_CTOS_H
+#ifndef PMS_1003_H
+#define PMS_1003_H
 
 #include <CityOS.h>
 #include "SoftwareSerial.h"
 
 
-class PMS1003: public CityOS {
+class PMS_1003: public CityOS {
 public:
 
-    PMS1003(int rx, int tx);
+    PMS_1003(int rx, int tx);
 
 private:
 
@@ -28,4 +28,4 @@ private:
     void setWorstRange();
 };
 
-#endif /* ifndef PMS1003_CTOS_H */
+#endif /* ifndef PMS_1003_H */

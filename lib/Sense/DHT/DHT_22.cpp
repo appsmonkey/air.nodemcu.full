@@ -1,6 +1,6 @@
-#include <DHT22_CityOS.h>
+#include <DHT_22.h>
 
-DHT22_CityOS::DHT22_CityOS(int cpin = D1)
+DHT_22::DHT_22(int cpin = D1)
 {
     pin.dht = cpin;
     _dht    = new DHT(pin.dht, DHT22);
@@ -11,17 +11,17 @@ DHT22_CityOS::DHT22_CityOS(int cpin = D1)
     sense(this);
 }
 
-DHT22_CityOS::~DHT22_CityOS()
+DHT_22::~DHT_22()
 {
     delete _dht;
 }
 
-void DHT22_CityOS::setup()
+void DHT_22::setup()
 {
     _dht->begin();
 }
 
-void DHT22_CityOS::loop()
+void DHT_22::loop()
 {
     // Read temperature as Celsius (the default)
     in.temperature = _dht->readTemperature();

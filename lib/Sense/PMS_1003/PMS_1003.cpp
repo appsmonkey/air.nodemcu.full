@@ -1,7 +1,7 @@
-#include <PMS1003.h>
+#include <PMS_1003.h>
 
 
-PMS1003::PMS1003(int rx, int tx)
+PMS_1003::PMS_1003(int rx, int tx)
 {
     pin.rx = rx;
     pin.tx = tx;
@@ -17,10 +17,10 @@ PMS1003::PMS1003(int rx, int tx)
     sense(this);
 }
 
-void PMS1003::setup()
+void PMS_1003::setup()
 { }
 
-void PMS1003::loop()
+void PMS_1003::loop()
 {
     SoftwareSerial * _swSer;
 
@@ -53,9 +53,9 @@ void PMS1003::loop()
             setWorstRange();
         }
     }
-} // PMS1003::loop
+} // PMS_1003::loop
 
-char PMS1003::checkValue(unsigned char * thebuf, char leng)
+char PMS_1003::checkValue(unsigned char * thebuf, char leng)
 {
     char receiveflag = 0;
     int receiveSum   = 0;
@@ -73,7 +73,7 @@ char PMS1003::checkValue(unsigned char * thebuf, char leng)
     return receiveflag;
 }
 
-int PMS1003::read16Bits(unsigned char * thebuf, int offset)
+int PMS_1003::read16Bits(unsigned char * thebuf, int offset)
 {
     unsigned int PMVal;
 
@@ -82,7 +82,7 @@ int PMS1003::read16Bits(unsigned char * thebuf, int offset)
 }
 
 // 0-5
-void PMS1003::setPM2_5Range()
+void PMS_1003::setPM2_5Range()
 {
     // USA
     int ranges[5] = { 13, 36, 56, 151, 251 };
@@ -98,7 +98,7 @@ void PMS1003::setPM2_5Range()
     setOutputValue("air pm 2.5 range", (int) sizeof(ranges));
 }
 
-void PMS1003::setPM10Range()
+void PMS_1003::setPM10Range()
 {
     // USA
     int ranges[5] = { 55, 155, 255, 355, 425 };
@@ -115,7 +115,7 @@ void PMS1003::setPM10Range()
     setOutputValue("air pm 10 range", (int) sizeof(ranges));
 }
 
-void PMS1003::setWorstRange()
+void PMS_1003::setWorstRange()
 {
     setPM2_5Range();
     setPM10Range();
