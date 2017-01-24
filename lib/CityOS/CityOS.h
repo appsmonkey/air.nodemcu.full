@@ -37,7 +37,7 @@ public:
         String host;
         int    port;
         String token;    // GRID TOKEN
-        int    deviceID; // GRID Device ID
+        String deviceID; // GRID Device ID
         int    timeout;  // Before giving up on requests
     } api;
 
@@ -85,7 +85,6 @@ protected:
 
     // Debug Info function
     String getMacHEX();
-    int getMacINT();
 
     int getSensorCount();
 

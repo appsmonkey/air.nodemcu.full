@@ -7,6 +7,7 @@ void setup()
     led.listen = "air aqi range";
     // led.debug = true;
 
+    ctos.debug.api     = true;
     ctos.debug.inputs  = true;
     ctos.debug.outputs = true;
 

@@ -17,7 +17,7 @@ CityOS::CityOS()
     api.active   = true;
     api.host     = "ctos.io";
     api.port     = 80;
-    api.deviceID = 0;
+    api.deviceID = "00:00:00:00:00:00";
     api.timeout  = 10;
 
     readings.active   = true;
@@ -89,7 +89,7 @@ void CityOS::setup()
     if (debug.wifi || debug.webserver)
         printWifiStatus();
 
-    api.deviceID = getMacINT();
+    api.deviceID = getMacHEX();
 
     for (auto const& s:senses) {
         s->setup();
@@ -430,33 +430,14 @@ String CityOS::getMacHEX()
 
     String cMac = "";
     for (int i = 0; i < 6; ++i) {
+        // if (mac[i] < 16)
+        //    cMac += "0";
         cMac += String(mac[i], HEX);
         if (i < 5)
-            cMac += "-";
+            cMac += ":";
     }
-    cMac.toUpperCase();
+    // cMac.toUpperCase();
     return cMac;
-}
-
-// Debug Info function
-int CityOS::getMacINT()
-{
-    static int macINT = 0;
-
-    if (macINT)
-        return macINT;
-
-    byte mac[6];
-
-    WiFi.macAddress(mac);
-
-    String cMac = "";
-    for (int i = 0; i < 6; ++i)
-        cMac += String(mac[i]);
-
-    macINT = atoi(cMac.c_str());
-
-    return macINT;
 }
 
 // Used during setup()
