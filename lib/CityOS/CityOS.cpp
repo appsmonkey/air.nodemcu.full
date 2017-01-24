@@ -56,7 +56,7 @@ void CityOS::setup()
 
     int wifi_retry_count = 1;
     int retry_on         = 500;
-    while (wifi_retry_count < 5 && WiFi.status() != WL_CONNECTED) {
+    while (wifi_retry_count < 15 && WiFi.status() != WL_CONNECTED) {
         yield();
         delay(retry_on);
         if (debug.wifi)
