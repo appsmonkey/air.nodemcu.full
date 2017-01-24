@@ -3,3 +3,5 @@ alias s9="pio -f -c atom serialports monitor --port /dev/cu.wchusbserial1420 --b
 alias u="pio run --target upload; pio -f -c atom serialports monitor --port /dev/cu.SLAB_USBtoUART --baud 115200"
 alias b="pio run"
 alias r="cd ~/src/air.nodemcu.full/"
+alias ip="curl 'https://api.ipify.org'; echo"
+alias esp="esptool.py -p /dev/tty.SLAB_USBtoUART "

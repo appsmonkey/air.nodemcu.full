@@ -11,6 +11,7 @@ void setup()
     ctos.debug.inputs  = true;
     ctos.debug.outputs = true;
 
+    ctos.debug.api = true;
     // Initialize framework setups
     ctos.setup();
 }

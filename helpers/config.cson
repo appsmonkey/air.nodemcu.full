@@ -10,15 +10,9 @@
       beautify_on_save: true
       configPath: "~/src/air.nodemcu.full/helpers/.uncrustify.cfg"
     general:
-      _analyticsUserId: "5fff5f9f-8e27-4554-a9a8-0363b65d92c0"
+      _analyticsUserId: ""
       analytics: false
-  build:
-    saveOnBuild: true
-    scrollOnError: true
   core:
-    disabledPackages: [
-      "symbols-view"
-    ]
     ignoredNames: [
       ".git"
       ".hg"
@@ -31,36 +25,15 @@
       ".clang_complete"
       ".gcc-flags.json"
     ]
-    projectHome: "~/src"
-    themes: [
-      "one-dark-ui"
-      "one-dark-syntax"
-    ]
   editor:
-    fontSize: 16
+    invisibles: {}
   "exception-reporting":
-    userId: "bb2886bd-6330-3438-f9e3-a8b1e31243ee"
-  "find-and-replace":
-    openProjectFindResultsInRightPane: true
-    scrollToResultOnLiveSearch: true
-  linter:
-    errorPanelHeight: 26
-    showErrorTabLine: true
-  "markdown-preview":
-    useGitHubStyle: true
-  minimap:
-    absoluteMode: true
-    adjustAbsoluteModeHeight: true
-  "one-dark-ui":
-    fontSize: 18
+    userId: "a49dae0c-3e71-ea70-6d4d-4595c2180974"
   "platformio-ide":
     showHomeScreen: false
   "platformio-ide-terminal":
     core:
-      autoRunCommand: "export PATH=~/.atom/packages/platformio-ide/penv/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin"
-  "symbols-tree-view":
-    autoToggle: true
-    defaultWidth: 300
+      autoRunCommand: "export PATH=~/.atom/packages/platformio-ide/penv/bin:/opt/local/bin:/opt/local/sbin:/opt/local/bin:/opt/local/sbin:/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:~/src/scripts"
   "tool-bar":
     position: "Left"
   "tree-view":
