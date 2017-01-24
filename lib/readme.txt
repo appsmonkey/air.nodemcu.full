@@ -1,26 +1,48 @@
-
-This directory is for the project specific (private) libraries.
+# Libs
+This directory is for the libraries.
 PlatformIO will compile them to static libraries and link to executable file.
 
 Place the source code of each library in separate directory, like
-"lib/Air/[here are source files]".
+"lib/Control/RGB_LED/[here are source files]".
 
-For example, see how we organized `Air` library:
+There are 3 Main groups of libs:
+
+## Boards
+e.g. "lib/Board/NodeMCU/[here are source files]".
+Libs specific to the boards like pin layout mappings, specific board libraries includes etc. 
+
+## Control
+e.g. "lib/Control/RGB_LED/[here are source files]".
+These are all things that you will control: leds, servos, relays...
+
+## Sense
+e.g. "lib/Sense/DHT22/[here are source files]".
+These are all things that you will use to sense (one per sensor or unit)
+
+## Device
+e.g. "lib/Device/Air.h".
+These are different Device configurations 
+
+For example, see how we organized `Air Device` libraries:
 
 |--lib
-|  |--Air
-|  |  |--docs
-|  |  |--examples
-|  |  |--src
-|  |     |- Air.cpp
-|  |     |- Air.h
-|  |- readme.txt --> THIS FILE
+|  |--Board
+|  |  |--NodeMCU
+|  |     |- NodeMCU.h
+|  |--Control
+|  |  |--RGB_LED
+|  |     |- RGB_LED.h
+|  |     |- RGB_LED.cpp
+|  |--Sense
+|  |  |--DHT_22
+|  |     |- DHT_22.h
+|  |     |- DHT_22.cpp
 |- platformio.ini
-|- CityOSAir.ino
+|- Air.ino
 
-Then in `CityOSAir.ino` you use:
+Then in `Air.ino` you use:
 
-#include <Air.h>
+#include <Device.h>
 
 // rest H/C/CPP code
 
