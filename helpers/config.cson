@@ -31,13 +31,13 @@
       ".clang_complete"
       ".gcc-flags.json"
     ]
-    projectHome: "/Users/ceco/src"
+    projectHome: "~/src"
     themes: [
-      "one-light-ui"
-      "one-light-syntax"
+      "one-dark-ui"
+      "one-dark-syntax"
     ]
   editor:
-    fontSize: 24
+    fontSize: 16
   "exception-reporting":
     userId: "bb2886bd-6330-3438-f9e3-a8b1e31243ee"
   "find-and-replace":
