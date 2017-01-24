@@ -1,0 +1,69 @@
+"*":
+  "atom-beautify":
+    arduino:
+      beautify_on_save: true
+      configPath: "~/src/air.nodemcu.full/helpers/.uncrustify.cfg"
+    c:
+      beautify_on_save: true
+      configPath: "~/src/air.nodemcu.full/helpers/.uncrustify.cfg"
+    cpp:
+      beautify_on_save: true
+      configPath: "~/src/air.nodemcu.full/helpers/.uncrustify.cfg"
+    general:
+      _analyticsUserId: "5fff5f9f-8e27-4554-a9a8-0363b65d92c0"
+      analytics: false
+  build:
+    saveOnBuild: true
+    scrollOnError: true
+  core:
+    disabledPackages: [
+      "symbols-view"
+    ]
+    ignoredNames: [
+      ".git"
+      ".hg"
+      ".svn"
+      ".DS_Store"
+      "._*"
+      "Thumbs.db"
+      ".pioenvs"
+      ".piolibdeps"
+      ".clang_complete"
+      ".gcc-flags.json"
+    ]
+    projectHome: "/Users/ceco/src"
+    themes: [
+      "one-light-ui"
+      "one-light-syntax"
+    ]
+  editor:
+    fontSize: 24
+  "exception-reporting":
+    userId: "bb2886bd-6330-3438-f9e3-a8b1e31243ee"
+  "find-and-replace":
+    openProjectFindResultsInRightPane: true
+    scrollToResultOnLiveSearch: true
+  linter:
+    errorPanelHeight: 26
+    showErrorTabLine: true
+  "markdown-preview":
+    useGitHubStyle: true
+  minimap:
+    absoluteMode: true
+    adjustAbsoluteModeHeight: true
+  "one-dark-ui":
+    fontSize: 18
+  "platformio-ide":
+    showHomeScreen: false
+  "platformio-ide-terminal":
+    core:
+      autoRunCommand: "export PATH=~/.atom/packages/platformio-ide/penv/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin"
+  "symbols-tree-view":
+    autoToggle: true
+    defaultWidth: 300
+  "tool-bar":
+    position: "Left"
+  "tree-view":
+    hideIgnoredNames: true
+  welcome:
+    showOnStartup: false
