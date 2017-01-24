@@ -1,18 +1,23 @@
 #!/usr/bin/env bash
 
-mkdir ~/src/
-cd ~/src/
-git clone https://github.com/appsmonkey/air.nodemcu.full.git
-
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-brew cask install Caskroom/cask/atom
-brew cask install Caskroom/cask/github-desktop
+
+#Desktop Apps
 brew cask install Caskroom/cask/silicon-labs-vcp-driver
+brew cask install Caskroom/cask/github-desktop
+brew cask install Caskroom/cask/atom
+
+#Code beautifier
 brew install uncrustify
 
+#Atom packages
 apm install platformio-ide
 apm install atom-beautify
 apm install symbols-tree-view
+
+mkdir ~/src/
+cd ~/src/
+git clone https://github.com/appsmonkey/air.nodemcu.full.git
 
 cp ~/src/air.nodemcu.full/helpers/config.cson ~/.atom/
 
