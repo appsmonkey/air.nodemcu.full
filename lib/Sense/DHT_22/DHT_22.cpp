@@ -19,6 +19,9 @@ DHT_22::~DHT_22()
 void DHT_22::setup()
 {
     _dht->begin();
+    in.temperature      = 0;
+    in.humidity         = 0;
+    in.temperature_feel = 0;
 }
 
 void DHT_22::loop()
@@ -31,9 +34,6 @@ void DHT_22::loop()
 
     // Check if any reads failed and exit early (will try again).
     if (isnan(in.humidity) || isnan(in.temperature)) {
-        in.temperature      = 0;
-        in.humidity         = 0;
-        in.temperature_feel = 0;
         if (debug.errors) Serial
                 << "ERROR| Failed to read from DHT sensor (humidity & temperature set to 0)!" << endl;
     } else {
