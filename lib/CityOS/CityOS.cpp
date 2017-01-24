@@ -56,7 +56,7 @@ void CityOS::setup()
 
     int wifi_retry_count = 1;
     int retry_on         = 500;
-    while (WiFi.status() != WL_CONNECTED) {
+    while (wifi_retry_count < 5 && WiFi.status() != WL_CONNECTED) {
         yield();
         delay(retry_on);
         if (debug.wifi)
@@ -73,9 +73,12 @@ void CityOS::setup()
         wifi_retry_count++;
     }
 
-    if (debug.wifi && (wifi_retry_count > 1)) Serial
-            << "connected." << endl;
-
+    if (debug.wifi) {
+        if (WiFi.status() == WL_CONNECTED)
+            Serial << "connected." << endl;
+        else
+            Serial << "giving up on connection for now." << endl;
+    }
     // Starting the web server
     if (debug.webserver) Serial
             << "WEBSERVER: Started on port: " << webserver.port << endl;

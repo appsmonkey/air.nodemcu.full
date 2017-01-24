@@ -63,6 +63,13 @@ public:
     // Arduino loop() func
     virtual void loop();
 
+    // Use in Loop, returns old value
+    static int setInputValue(String input, int newValue);
+    static int setOutputValue(String input, int newValue);
+
+    static float setInputValue(String input, float newValue);
+    static float setOutputValue(String input, float newValue);
+
 protected:
 
     static std::vector < CityOS * > senses;
@@ -92,13 +99,6 @@ protected:
 
     // Used in Setup - Parse schema JSON and send it to server
     void sendSchema();
-
-    // Use in Loop, returns old value
-    static int setInputValue(String input, int newValue);
-    static int setOutputValue(String input, int newValue);
-
-    static float setInputValue(String input, float newValue);
-    static float setOutputValue(String input, float newValue);
 
     static std::map < int, float > getValues();
 
