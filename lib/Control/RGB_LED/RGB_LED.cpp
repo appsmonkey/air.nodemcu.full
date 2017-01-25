@@ -55,8 +55,8 @@ void RGB_LED::loop()
 
     int colors[6][3] = {
         {    1, 200, 255 }, // blue
-        {  175, 255,   1 }, // green
-        {  245,  90,   1 }, // yellow
+        {   60, 255,   1 }, // green
+        {  255, 120,   1 }, // yellow
         {  255,  40,   1 }, // orange
         {  255,   1, 170 }, // purple
         {  255,   1,   1 } // red
