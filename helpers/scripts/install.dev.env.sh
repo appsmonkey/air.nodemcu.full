@@ -10,6 +10,9 @@ brew cask install Caskroom/cask/atom
 #Code beautifier
 brew install uncrustify
 
+#arp-scan
+brew install arp-scan
+
 #Atom packages
 apm install platformio-ide
 apm install atom-beautify
