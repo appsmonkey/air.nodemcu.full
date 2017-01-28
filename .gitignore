@@ -2,6 +2,5 @@
 .piolibdeps
 .clang_complete
 .gcc-flags.json
-lib/Config/Config.h
 
 lib/Config/Config.h
