@@ -11,6 +11,7 @@ std::vector<CityOS *> CityOS::intervals;
 
 CityOS::CityOS()
 {
+    // Print errors to Serial
     debug.errors = true;
 
     api.active   = true;
