@@ -12,8 +12,7 @@ public:
 
 private:
 
-    void setup();
-    void loop();
+    void interval();
 
     struct _PIN {
         int rx; // PM Sensors RX PIN

@@ -28,8 +28,8 @@ public:
         bool wifi      = false;
         bool json      = false;
         bool memory    = false;
-        bool inputs    = false;
-        bool outputs   = false;
+        bool senses    = false;
+        bool controls  = false;
     } debug;
 
     struct _API {
@@ -41,10 +41,10 @@ public:
         int    timeout;  // Before giving up on requests
     } api;
 
-    struct _READINGS {
+    struct _SENSING {
         bool active = false;
         int  interval;
-    } readings;
+    } sensing;
 
     struct _WIFI {
         bool   active = false; // WIFI SSID
@@ -57,49 +57,49 @@ public:
         int  port;
     } webserver;
 
-    // Arduino setup() func
-    virtual void setup();
-
-    // Arduino loop() func
+    // Arduino loop() func every time
+    void setup();
     virtual void loop();
 
-    // Use in Loop, returns old value
-    static int setInputValue(String input, int newValue);
-    static int setOutputValue(String input, int newValue);
+    // loop() on interval timing
+    virtual void interval();
 
-    static float setInputValue(String input, float newValue);
-    static float setOutputValue(String input, float newValue);
+    // Used in interval, returns old value
+    static int setSense(String sense, int value);
+    static float setSense(String sense, float value);
 
+    static int setControl(String control, int value);
+    static float setControl(String control, float value);
+
+    void rest(String method, String url, String json);
 protected:
 
-    static std::vector < CityOS * > senses;
-    static std::vector < CityOS * > controls;
+    static std::vector < CityOS * > loops;
+    static std::vector < CityOS * > intervals;
 
-    static std::vector < String > inputs;
-    static std::vector < String > outputs;
+    static std::vector < String > senses;
+    static std::vector < String > controls;
 
-    static std::map < String, float > inputValues;
-    static std::map < String, float > outputValues;
-
-    std::map < int, float > getAndResetValues();
+    static std::map < String, float > senseValues;
+    static std::map < String, float > controlValues;
 
     // Debug Info function
     String getMacHEX();
 
     int getSensorCount();
 
-    // Every reading is one data point
-    int input(String type);
-    int output(String type);
+    // physical sensors and controlables
+    int sense(String sense);
+    int control(String control);
 
-    // physical sensor
-    virtual int sense(CityOS *);
-    virtual int control(CityOS *);
+    virtual void addToLoop(CityOS *);
+    virtual void addToInterval(CityOS *);
 
     // Used in Setup - Parse schema JSON and send it to server
     void sendSchema();
-
-    static std::map < int, float > getValues();
+    void sendSenses();
+    void requestControls();
+    void handleControls();
 
     WiFiServer * _server;
     WiFiClient _client;
@@ -108,13 +108,11 @@ protected:
     const char * HTMLHead();
     const char * HTMLFoot();
 
-    void sendData();
-
     ////Debug Info Functions
     void printWifiStatus();
     void printHeapSize();
-    void printInputValues();
-    void printOutputValues();
+    void printSenses();
+    void printControls();
 };
 
 // - - - - - - - - - - - - - //

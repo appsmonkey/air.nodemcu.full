@@ -21,8 +21,7 @@ public:
 
     RGB_LED(int red, int green, int blue);
 
-    void setup();
-    void loop();
+    void interval();
 };
 
 #endif /* ifndef RGB_LED_CTOS_H */

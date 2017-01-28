@@ -1,14 +1,13 @@
 #include <CityOS.h>
 
+std::vector<String> CityOS::senses;
+std::vector<String> CityOS::controls;
 
-std::vector<String> CityOS::inputs;
-std::vector<String> CityOS::outputs;
+std::map<String, float> CityOS::senseValues;
+std::map<String, float> CityOS::controlValues;
 
-std::map<String, float> CityOS::inputValues;
-std::map<String, float> CityOS::outputValues;
-
-std::vector<CityOS *> CityOS::senses;
-std::vector<CityOS *> CityOS::controls;
+std::vector<CityOS *> CityOS::loops;
+std::vector<CityOS *> CityOS::intervals;
 
 CityOS::CityOS()
 {
@@ -20,8 +19,9 @@ CityOS::CityOS()
     api.deviceID = "00:00:00:00:00:00";
     api.timeout  = 10;
 
-    readings.active   = true;
-    readings.interval = 60;
+    sensing.active   = true;
+    sensing.interval = 60;
+
     // make api.interval 30+ sec for production - do not go much lower here
     // each client.connect() eats 184 bytes at a time
     // and returns it in few minutes as they timeout
@@ -37,11 +37,6 @@ CityOS::CityOS()
     _server = new WiFiServer(webserver.port);
 }
 
-CityOS::~CityOS()
-{
-    delete _server;
-}
-
 void CityOS::setup()
 {
     // Start Serials
@@ -55,8 +50,9 @@ void CityOS::setup()
     WiFi.begin(wifi.ssid.c_str(), wifi.pass.c_str());
 
     int wifi_retry_count = 1;
-    int retry_on         = 500;
-    while (wifi_retry_count < 15 && WiFi.status() != WL_CONNECTED) {
+    int retry_on         = 1000;
+    int retry_for        = 10;
+    while (wifi_retry_count < 10 && WiFi.status() != WL_CONNECTED) {
         yield();
         delay(retry_on);
         if (debug.wifi)
@@ -91,95 +87,118 @@ void CityOS::setup()
 
     api.deviceID = getMacHEX();
 
-    for (auto const& s:senses) {
-        s->setup();
-        yield();
-    }
-
-    for (auto const& c:controls) {
-        c->setup();
-        yield();
-    }
-
     // Send Schema to server
     if (api.active)
         sendSchema();
 } // CityOS::setup
+
+CityOS::~CityOS()
+{
+    delete _server;
+}
 
 void CityOS::loop()
 {
     static unsigned long OledTimer = millis();
     static bool first = true;
 
-    if (readings.active &&
-      (first || millis() - OledTimer > (readings.interval * 1000)))
+    if (first)
+        setup();
+
+    if (sensing.active &&
+      (first || millis() - OledTimer > (sensing.interval * 1000)))
     {
         // update right away - no wait on first time
         first     = false;
         OledTimer = millis();
+        interval();
+    }
 
-        for (auto const& s:senses) {
-            s->loop();
-            yield();
-        }
-
-        for (auto const& c:controls) {
-            c->loop();
-            yield();
-        }
-
-        if (debug.inputs)
-            printInputValues();
-
-        if (debug.outputs)
-            printOutputValues();
-
-        if (api.active)
-            sendData();
-
-        // memory leaks check
-        if (debug.memory)
-            printHeapSize();
+    for (auto const& l:loops) {
+        l->loop();
+        yield();
     }
 
     if (webserver.active)
         serveHTML();
 } // CityOS::loop
 
+void CityOS::interval()
+{
+    for (auto const& i:intervals) {
+        i->interval();
+        yield();
+    }
+
+    if (debug.senses)
+        printSenses();
+
+    if (api.active)
+        sendSenses();
+
+    // memory leaks check
+    if (debug.memory)
+        printHeapSize();
+}
+
 void CityOS::sendSchema()
 {
-    String json = "";
+    String json = "{\n";
 
-    json += "{\n";
+    if (senses.size() > 0) {
+        json += "  \"sense\" : {\n";
 
-    int count = 1;
-    for (auto const& input : inputs) {
-        if (count > 1)
-            json += ",\n";
+        if (debug.senses)
+            Serial << "SENSE | Data points set: " << endl;
+        int count = 1;
 
-        json += "\"";
-        json += count;
-        json += "\" : ";
+        for (auto const& sense : senses) {
+            if (debug.senses)
+                Serial << "SENSE | " << count << ". " << sense << endl;
 
-        json += "\"";
-        json += input;
-        json += "\"";
-        count++;
-    }
+            if (count > 1)
+                json += ",\n";
 
-    json += "\n}\n";
-
-    if (debug.json) Serial
-            << "JSON| Schema: " << json.c_str() << endl;
-
-    if (debug.inputs) {
-        Serial << "INPUTS | Data points set: " << endl;
-        count = 1;
-        for (auto const& input : inputs) {
-            Serial << "INPUTS | " << count << ". " << input << endl;
+            json += "    \"";
+            json += count;
+            json += "\" : \"" + sense + "\"";
             count++;
         }
+
+        json += "  }";
     }
+    if ((senses.size() > 0) && (controls.size() > 0))
+        json += ",\n";
+
+    if (controls.size() > 0) {
+        json += "  \"control\" : {\n";
+
+        if (debug.controls)
+            Serial << "CONTROL | Data points set: " << endl;
+        int count = 1;
+
+        for (auto const& control : controls) {
+            if (debug.controls)
+                Serial << "CONTROL | " << count << ". " << control << endl;
+
+            if (count > 1)
+                json += ",\n";
+
+            json += "    \"";
+            json += count;
+            json += "\" : \"" + control + "\"";
+            count++;
+        }
+
+        json += "\n  }\n";
+    }
+
+    json += "}\n";
+
+    if (debug.schema) Serial
+            << "JSON| Schema: " << endl << json.c_str() << endl;
+
+    rest("POST", "/device/" + api.deviceID + "/schema", json);
 } // CityOS::sendSchema
 
 void CityOS::serveHTML()
@@ -210,8 +229,8 @@ void CityOS::serveHTML()
 
                 client << "<h1>Sensors</h1>" << nl;
 
-                for (auto const& r : inputValues)
-                    client << "<p>" << r.first << ": " << r.second << endl;
+                for (auto const& sv : senseValues)
+                    client << "<p>" << sv.first << ": " << sv.second << endl;
 
                 client << HTMLFoot();
                 break;
@@ -232,14 +251,14 @@ void CityOS::serveHTML()
             << "WEBSERVER: Client disconnected." << endl;
 } // CityOS::serveHTML
 
-void CityOS::sendData()
+void CityOS::sendSenses()
 {
     String json = "";
 
     json += "{";
 
     int count = 1;
-    for (auto const& input : inputs) {
+    for (auto const& sense : senses) {
         if (count > 1)
             json += ", ";
 
@@ -247,7 +266,7 @@ void CityOS::sendData()
         json += count;
         json += "\" : ";
 
-        float value = inputValues[input];
+        float value = senseValues[sense];
         // Optimize traffic -- striping zeros on doubles castable to integer
         int si = ceilf(value);
         if (value == si)
@@ -262,30 +281,34 @@ void CityOS::sendData()
 
     if (debug.json) Serial << json.c_str() << endl;
 
+    rest("POST", "/device/" + api.deviceID + "/readings", json);
+}
+
+void CityOS::rest(String method, String url, String json)
+{
     String hostPort = api.host + ":" + api.port;
 
     if (_client.connected()) {
         if (debug.api) Serial
-                << "API connection to: " << hostPort << "  Reused" << endl;
+                << "API | Connection to: " << hostPort << "  Reused" << endl;
     }   else if (!_client.connect(api.host.c_str(), api.port)) {
         if (debug.errors) Serial
-                << "API connection to: " << hostPort << "  Failed" << endl;
+                << "API | Connection to: " << hostPort << "  Failed" << endl;
         return;
     }
 
     if (debug.api) Serial
-            << "API connection to: " << hostPort << "  successful" << endl;
-
-    if (debug.api) Serial
-            << "API: Sending json:" << endl << json.c_str() << endl;
+            << "API | connection to: " << hostPort << "  successful" << endl;
 
     if (debug.api) {
         Serial
-            << "API: http://" << hostPort << "/device/"
-            << api.deviceID << "/readings" << endl;
+            << "API | " << method << " to http://" << hostPort << url << endl;
     }
 
-    _client << "POST /device/" << api.deviceID << "/readings HTTP/1.1" << endl;
+    if (debug.api) Serial
+            << "API | Sending json:" << endl << json.c_str() << endl;
+
+    _client << method << " " << url << " HTTP/1.1" << endl;
     _client << "Host: " << api.host.c_str() << endl;
     _client << "Authorization: Bearer " << api.token.c_str() << endl;
     _client << "Content-Type: application/json" << endl;
@@ -333,15 +356,15 @@ void CityOS::sendData()
     }
 } // CityOS::sendData
 
-void CityOS::printInputValues()
+void CityOS::printSenses()
 {
-    Serial << endl << "INPUTS | Data points: " << endl;
+    Serial << endl << "SENSES | Data points: " << endl;
     Serial << " - -  - -  - -  - -  " << endl;
     int count = 1;
-    for (auto const& input : inputs) {
-        Serial << count << ". " << input << ": ";
+    for (auto const& sense : senses) {
+        Serial << count << ". " << sense << ": ";
 
-        float value = inputValues[input];
+        float value = senseValues[sense];
         int si      = ceilf(value);
         if (value == si)
             Serial << si;
@@ -354,15 +377,15 @@ void CityOS::printInputValues()
     Serial << " - -  - -  - -  - -  " << endl;
 }
 
-void CityOS::printOutputValues()
+void CityOS::printControls()
 {
-    Serial << endl << "OUTPUTS | Data points: " << endl;
+    Serial << endl << "CONTROLS | Data points: " << endl;
     Serial << " - -  - -  - -  - -  " << endl;
     int count = 1;
-    for (auto const& output : outputs) {
-        Serial << count << ". " << output << ": ";
+    for (auto const& control : controls) {
+        Serial << count << ". " << control << ": ";
 
-        float value = outputValues[output];
+        float value = controlValues[control];
         int si      = ceilf(value);
         if (value == si)
             Serial << si;
@@ -441,67 +464,67 @@ String CityOS::getMacHEX()
 }
 
 // Used during setup()
-int CityOS::input(String type)
+int CityOS::sense(String sense)
 {
-    inputs.push_back(type);
-    return inputs.size();
+    senses.push_back(sense);
+    return senses.size();
 }
 
 // Used during setup()
-int CityOS::output(String type)
-{
-    outputs.push_back(type);
-    return outputs.size();
-}
-
-int CityOS::setInputValue(String type, int newValue)
-{
-    return setInputValue(type, (float) newValue);
-}
-
-float CityOS::setInputValue(String type, float newValue)
-{
-    std::map<String, float>::iterator it;
-
-    // if value on this case was never set return 0
-    float oldValue = 0;
-
-    // check for exiting data
-    it = inputValues.find(type);
-    if (it != inputValues.end())
-        oldValue = inputValues[type];
-
-    inputValues[type] = newValue;
-    return oldValue;
-}
-
-int CityOS::setOutputValue(String type, int newValue)
-{
-    return setOutputValue(type, (float) newValue);
-}
-
-float CityOS::setOutputValue(String type, float newValue)
-{
-    std::map<String, float>::iterator it;
-
-    // if value on this case was never set return 0
-    float oldValue = 0;
-
-    // check for exiting data
-    it = outputValues.find(type);
-    if (it != inputValues.end())
-        oldValue = outputValues[type];
-
-    outputValues[type] = newValue;
-    return oldValue;
-}
-
-int CityOS::sense(CityOS * sensor)
-{
-    senses.push_back(sensor);
-}
-
-int CityOS::control(CityOS * control)
+int CityOS::control(String control)
 {
     controls.push_back(control);
+    return controls.size();
+}
+
+int CityOS::setSense(String sense, int value)
+{
+    return setSense(sense, (float) value);
+}
+
+float CityOS::setSense(String sense, float value)
+{
+    std::map<String, float>::iterator it;
+
+    // if value on this case was never set return 0
+    float oldValue = 0;
+
+    // check for exiting data
+    it = senseValues.find(sense);
+    if (it != senseValues.end())
+        oldValue = senseValues[sense];
+
+    senseValues[sense] = value;
+    return oldValue;
+}
+
+int CityOS::setControl(String control, int value)
+{
+    return setControl(control, (float) value);
+}
+
+float CityOS::setControl(String control, float value)
+{
+    std::map<String, float>::iterator it;
+
+    // if value on this case was never set return 0
+    float oldValue = 0;
+
+    // check for exiting data
+    it = controlValues.find(control);
+    if (it != controlValues.end())
+        oldValue = controlValues[control];
+
+    controlValues[control] = value;
+    return oldValue;
+}
+
+void CityOS::addToLoop(CityOS * c)
+{
+    loops.push_back(c);
+}
+
+void CityOS::addToInterval(CityOS * i)
+{
+    intervals.push_back(i);
 }

@@ -6,24 +6,19 @@ RGB_LED::RGB_LED(int red, int green, int blue)
     pin.green = green;
     pin.blue  = blue;
 
-    pinMode(pin.red, OUTPUT);
-    pinMode(pin.green, OUTPUT);
-    pinMode(pin.blue, OUTPUT);
-
     listen = "air aqi range";
 
-    sense(this);
-}
-
-void RGB_LED::setup()
-{
     // Turn it on
     pinMode(pin.red, OUTPUT);
     pinMode(pin.green, OUTPUT);
     pinMode(pin.blue, OUTPUT);
+
+    control("light rgb levels 6");
+
+    addToInterval(this);
 }
 
-void RGB_LED::loop()
+void RGB_LED::interval()
 {
     static int last_range = -1;
 
@@ -41,7 +36,7 @@ void RGB_LED::loop()
             << "RGB LED | Listening set to: " << listen << endl;
     }
 
-    int current_range = (int) outputValues[listen];
+    int current_range = (int) senseValues[listen];
 
     // no need to update if same as last
     if (current_range == last_range) {

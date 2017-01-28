@@ -1,14 +1,13 @@
 #ifndef DHT_22_H
 #define DHT_22_H
 
-
 #include "CityOS.h"
 #include "Adafruit_Sensor.h"
 #include "DHT.h"
 
 class DHT_22: public CityOS {
 public:
-    DHT_22(int cpin);
+    DHT_22(int pin);
     ~DHT_22();
 
     struct _in {
@@ -18,12 +17,9 @@ public:
         float temperature_feel;
     } in;
 
-    struct _PIN {
-        int dht; // DHT Sensor
-    } pin;
+    int pin; // DHT Sensor
 
-    void setup();
-    void loop();
+    void interval();
 private:
     DHT * _dht;
 };

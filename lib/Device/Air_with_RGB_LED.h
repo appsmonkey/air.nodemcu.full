@@ -5,8 +5,8 @@
 #include "NodeMCU.h"
 
 // Add inputs (sensors) header files
-#include "DHT22.h"
-#include "PMS1003.h"
+#include "DHT_22.h"
+#include "PMS_1003.h"
 
 // Add output
 #include "RGB_LED.h"
@@ -15,6 +15,6 @@
 CityOS ctos;
 
 // Initialize PINS on all inputs and outputs
-DHT22_CityOS dht(D1);
-PMS1003 pm(D7, D8);
+DHT_22 dht(D1);
+PMS_1003 pm(D7, D8);
 RGB_LED led(D2, D5, D6);

@@ -4,21 +4,20 @@
 // setup runs once
 void setup()
 {
-    led.listen = "air aqi range";
-    // led.debug = true;
+    // ctos.sensing.interval = 5;
+    // led.listen = "air aqi range";
+    // led.debug  = true;
 
-    ctos.debug.api     = true;
-    ctos.debug.inputs  = true;
-    ctos.debug.outputs = true;
-
-    ctos.debug.api = true;
-    // Initialize framework setups
-    ctos.setup();
+    // ctos.debug.memory   = true;
+    // ctos.debug.wifi     = true;
+    ctos.debug.api      = true;
+    ctos.debug.senses   = true;
+    ctos.debug.controls = true;
+    // ctos.debug.schema   = true;
 }
 
 // runs over and over again
 void loop()
 {
-    // Initialize framework loops
     ctos.loop();
 }
