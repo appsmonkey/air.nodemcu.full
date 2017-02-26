@@ -38,8 +38,8 @@ void WS_2812_Ring::loop()
             << "LED RING | Listening set to: " << listen << endl;
     }
 
-    // int current_range = 5;
     int current_range = (int) senseValues[listen];
+    current_range = 5;
 
     // When clear breathing deeper
     int depth = (14 - current_range) * 10;
