@@ -14,10 +14,9 @@ public:
     String listen;
 
     int pin;
+    int count;
 
-    void setup();
     void loop();
-    void looper();
 
 private:
     NeoPatterns ring;

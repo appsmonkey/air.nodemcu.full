@@ -8,11 +8,11 @@ void setup()
     // led.listen = "air aqi range";
     // led.debug  = true;
 
-    // ctos.debug.memory   = true;
+    ctos.debug.errors = true;
     // ctos.debug.wifi     = true;
-    ctos.debug.api      = true;
-    ctos.debug.senses   = true;
-    ctos.debug.controls = true;
+    ctos.debug.api = true;
+    // ctos.debug.senses   = true;
+    // ctos.debug.controls = true;
     // ctos.debug.schema   = true;
 }
 
