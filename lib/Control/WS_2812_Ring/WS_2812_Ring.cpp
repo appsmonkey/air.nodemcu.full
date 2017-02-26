@@ -7,6 +7,7 @@ WS_2812_Ring::WS_2812_Ring(int pin, int count) : ring(count, pin)
     addToLoop(this);
 
     ring.begin();
+    ring.setBrightness(255);
     // Loop rainbow until first reading
     ring.RainbowCycle(5);
     for (int i = 0; i < 2000; i++) {
@@ -21,8 +22,7 @@ void WS_2812_Ring::loop()
     static int last_intensity = -1;
     static int last_range     = -1;
     static int breath         = 0;
-    float brightness = 255;
-    static int step  = 1;
+    static int step = 1;
 
     if (!listen.length()) {
         if (debug) {
@@ -52,10 +52,10 @@ void WS_2812_Ring::loop()
 
     breath += step;
 
-    // if (current_range > 1)
-    intensity = (int) round(map(breath, 1, speed, depth, 255));
-    // else
-    //  intensity = 200;
+    if (current_range > 0)
+        intensity = (int) round(map(breath, 1, speed, depth, 255));
+    else
+        intensity = 255;
 
     // no need to update if same as last
     if (false && last_intensity == intensity && current_range == last_range) {
@@ -84,6 +84,10 @@ void WS_2812_Ring::loop()
     uint32_t color =
       ring.Color(colors[current_range][0], colors[current_range][1], colors[current_range][2], 255);
 
-    ring.ColorSet(color);
-    ring.show();
+    if (intensity % 3 == 0) {
+        ring.setBrightness(intensity);
+
+        ring.ColorSet(color);
+        ring.show();
+    }
 } // WS_2812_Ring::loop
