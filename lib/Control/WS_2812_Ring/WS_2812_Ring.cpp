@@ -49,56 +49,58 @@ void WS_2812_Ring::loop()
     }
 
     int current_range = (int) senseValues[listen];
-    current_range = 5;
+    // current_range = 0;
 
-    // When clear breathing deeper
-    int depth = (14 - current_range) * 10;
+    if (current_range > 2) {
+        // When clear breathing deeper
+        int depth = (8 + current_range) * 10;
+        // When clear breathing slower
+        int speed = (10 - current_range) * 1000;
 
-    // When clear breathing slower
-    int speed = (10 - current_range) * 8000;
+        if (breath > speed) {
+            breath = speed - 1;
+            step   = -step;
+        }
 
-    if (breath > speed) {
-        breath = speed - 1;
-        step   = -step;
-    }
+        if (breath < 0) {
+            breath = 1;
+            step   = -step;
+        }
 
-    if (breath < 0) {
-        breath = 1;
-        step   = -step;
-    }
+        breath += step;
 
-    breath += step;
+        if (debug) {
+            Serial << "intensity: " << intensity << endl;
+            // Serial << "speed: " << speed << endl;
+            // Serial << "breath: " << breath << endl;
+        }
 
-    if (current_range > 0)
         intensity = (int) round(map(breath, 1, speed, depth, 255));
-    else
+    } else {
         intensity = 255;
-
-    if (debug) {
-        Serial << "intensity: " << intensity << endl;
-        Serial << "speed: " << speed << endl;
-        Serial << "breath: " << breath << endl;
     }
-    if (last_intensity == intensity)
-        return;
-    ring.setBrightness(intensity);
-    last_intensity = intensity;
 
-    int colors[6][3] = {
-        {    1, 200, 255 }, // blue
-        {   60, 255,   1 }, // green
-        {  255, 120,   1 }, // yellow
-        {  255,  40,   1 }, // orange
-        {  255,   1, 170 }, // purple
-        {  255,   1,   1 }  // red
-    };
-
-
-    if (current_range >= sizeof(colors))
-        current_range = sizeof(colors) - 1;
-
-    for (int i = 0; i < ring.numPixels(); i++) {
-        ring.setPixelColor(i, colors[current_range][0], colors[current_range][1], colors[current_range][2]);
+    if (last_intensity != intensity) {
+        ring.setBrightness(intensity);
+        last_intensity = intensity;
     }
-    ring.show();
+
+    if (last_range != current_range || last_intensity != intensity) {
+        int colors[6][3] = {
+            {    1, 200, 255 }, // blue
+            {   60, 255,   1 }, // green
+            {  255, 120,   1 }, // yellow
+            {  255,  40,   1 }, // orange
+            {  255,   1, 170 }, // purple
+            {  255,   1,   1 } // red
+        };
+
+        if (current_range >= sizeof(colors))
+            current_range = sizeof(colors) - 1;
+
+        for (int i = 0; i < ring.numPixels(); i++) {
+            ring.setPixelColor(i, colors[current_range][0], colors[current_range][1], colors[current_range][2]);
+        }
+        ring.show();
+    }
 } // WS_2812_Ring::loop
