@@ -7,22 +7,32 @@ WS_2812_Ring::WS_2812_Ring(int pin, int count) : ring(count, pin)
     addToLoop(this);
 
     ring.begin();
+    ring.Interval = 100;
     ring.setBrightness(255);
     // Loop rainbow until first reading
-    ring.RainbowCycle(5);
-    for (int i = 0; i < 2000; i++) {
+    ring.RainbowCycle(0);
+    for (int i = 0; i < 1000; i++) {
         ring.RainbowCycleUpdate();
-        delay(100);
+        delay(300);
     }
 };
 
 void WS_2812_Ring::loop()
 {
-    static int intensity      = 255;
-    static int last_intensity = -1;
-    static int last_range     = -1;
+    static int lastUpdate = 0;
+
+    if ((millis() - lastUpdate) < ring.Interval) {
+        yield();
+        return;
+    }
+
+    lastUpdate = millis();
+
+    static int step           = 1;
     static int breath         = 0;
-    static int step = 1;
+    static int last_intensity = -1;
+    static int intensity      = 255;
+    static int last_range     = -1;
 
     if (!listen.length()) {
         if (debug) {
@@ -45,10 +55,17 @@ void WS_2812_Ring::loop()
     int depth = (14 - current_range) * 10;
 
     // When clear breathing slower
-    int speed = (5 - current_range) * 10000;
+    int speed = (10 - current_range) * 8000;
 
-    if (breath > speed || breath < 0)
-        step = -step;
+    if (breath > speed) {
+        breath = speed - 1;
+        step   = -step;
+    }
+
+    if (breath < 0) {
+        breath = 1;
+        step   = -step;
+    }
 
     breath += step;
 
@@ -57,16 +74,14 @@ void WS_2812_Ring::loop()
     else
         intensity = 255;
 
-    // no need to update if same as last
-    if (false && last_intensity == intensity && current_range == last_range) {
-        if (debug) {
-            Serial
-                << "LED RING | Range " << listen
-                << "same as last time - nothing to do" << endl;
-        }
-        return;
+    if (debug) {
+        Serial << "intensity: " << intensity << endl;
+        Serial << "speed: " << speed << endl;
+        Serial << "breath: " << breath << endl;
     }
-
+    if (last_intensity == intensity)
+        return;
+    ring.setBrightness(intensity);
     last_intensity = intensity;
 
     int colors[6][3] = {
@@ -78,16 +93,12 @@ void WS_2812_Ring::loop()
         {  255,   1,   1 }  // red
     };
 
+
     if (current_range >= sizeof(colors))
         current_range = sizeof(colors) - 1;
 
-    uint32_t color =
-      ring.Color(colors[current_range][0], colors[current_range][1], colors[current_range][2], 255);
-
-    if (intensity % 3 == 0) {
-        ring.setBrightness(intensity);
-
-        ring.ColorSet(color);
-        ring.show();
+    for (int i = 0; i < ring.numPixels(); i++) {
+        ring.setPixelColor(i, colors[current_range][0], colors[current_range][1], colors[current_range][2]);
     }
+    ring.show();
 } // WS_2812_Ring::loop
