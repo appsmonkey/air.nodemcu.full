@@ -1,5 +1,6 @@
 alias s="pio -f -c atom serialports monitor --port /dev/cu.SLAB_USBtoUART --baud 115200"
-alias s9="pio -f -c atom serialports monitor --port /dev/cu.wchusbserial1420 --baud 115200"
+alias s9="pio -f -c atom serialports monitor --port /dev/cu.wchu* --baud 115200"
+#alias s9="pio -f -c atom serialports monitor --port /dev/cu.wchusbserial1420 --baud 115200"
 alias u="pio run --target upload; pio -f -c atom serialports monitor --port /dev/cu.SLAB_USBtoUART --baud 115200"
 alias b="pio run"
 alias r="cd ~/src/air.nodemcu.full/"
