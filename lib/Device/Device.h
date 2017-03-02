@@ -5,8 +5,8 @@
 #include "NodeMCU.h"
 
 // Add inputs (sensors) header files
-#include "DHT_SIM.h"
-#include "PM_SIM.h"
+#include "DHT_22.h"
+#include "PMS_1003.h"
 
 // Add output
 #include "WS_2812_Ring.h"
@@ -15,7 +15,7 @@
 CityOS ctos;
 
 // Initialize PINS on all inputs and outputs
-DHT_SIM dht;
-PM_SIM pm;
+DHT_22 dht(D1);
+PMS_1003 pm(D7, D8);
 WS_2812_Ring ring(D2, 12); // Comment for RGB
 // RGB_LED led(D2, D5, D6); //Uncomment for RGB

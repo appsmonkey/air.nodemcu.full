@@ -5,8 +5,8 @@
 void setup()
 {
     // ctos.sensing.interval = 5;
-    // led.listen = "air aqi range";
-    // led.debug  = true;
+    // ring.listen = "air aqi range";
+    // ring.debug  = true;
 
     ctos.debug.errors = true;
     // ctos.debug.wifi     = true;
