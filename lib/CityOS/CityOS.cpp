@@ -81,12 +81,14 @@ void CityOS::setup()
             << "WEBSERVER: Started on port: " << webserver.port << endl;
     _server->begin();
 
-    delay(1000); // WAIT FOR SERIAL
+    delay(500); // WAIT FOR SERIAL
 
     if (debug.wifi || debug.webserver)
         printWifiStatus();
 
     api.deviceID = getMacHEX();
+
+    Serial << "ID: " << api.deviceID << endl;
 
     // Send Schema to server
     if (api.active)

@@ -10,7 +10,7 @@ void setup()
 
     ctos.debug.errors = true;
     // ctos.debug.wifi     = true;
-    // ctos.debug.api = true;
+    ctos.debug.api    = true;
     ctos.debug.senses = true;
     // ctos.debug.controls = true;
     // ctos.debug.schema   = true;

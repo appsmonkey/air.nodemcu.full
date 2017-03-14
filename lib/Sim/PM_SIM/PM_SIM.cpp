@@ -53,13 +53,13 @@ void PM_SIM::loop()
     static int pm2_5 = 1;
     static int pm10  = 1;
 
-    static int step = 1;
+    static int step = 3;
 
     pm1   += step;
     pm2_5 += step;
     pm10  += step;
 
-    if (pm1 >= 500 || pm1 <= 0)
+    if (pm1 >= 300 || pm1 <= 0)
         step = -step;
 
     setSense("air pm 1", pm1);
