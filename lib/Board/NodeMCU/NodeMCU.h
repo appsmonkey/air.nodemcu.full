@@ -1,8 +1,6 @@
 #ifndef NODEMCU_H
 #define NODEMCU_H
 
-#include <ESP8266WiFi.h> // ESP8266 Core WiFi Library (you most likely already have this in your sketch)
-
 #define D0  16
 #define D1  5 // I2C Bus SCL (clock)
 #define D2  4 // I2C Bus SDA (data)
