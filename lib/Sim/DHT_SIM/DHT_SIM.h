@@ -3,7 +3,7 @@
 
 #include "CityOS.h"
 
-class DHT_SIM : public CityOS {
+class DHT_SIM: public CityOS {
 public:
     DHT_SIM();
 
