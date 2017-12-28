@@ -5,7 +5,7 @@
 #include "Adafruit_Sensor.h"
 #include "DHT.h"
 
-class DHT_22: public CityOS {
+class DHT_22 : public CityOS {
 public:
     DHT_22(int pin);
     ~DHT_22();
