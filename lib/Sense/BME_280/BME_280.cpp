@@ -3,12 +3,12 @@
 #define SEALEVELPRESSURE_HPA (1013.25)
 //
 
-BME_280::BME_280(int scl = D3, int sda = D4, int i2c = 0x76)
+BME_280::BME_280(int scl, int sda, int i2c)
 {
     setup(scl, sda, i2c);
 };
 
-BME_280::BME_280(int scl = D3, int sda = D4)
+BME_280::BME_280(int scl, int sda)
 {
     setup(scl, sda, 0x76);
 };
