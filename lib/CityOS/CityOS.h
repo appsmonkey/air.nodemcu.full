@@ -9,7 +9,7 @@
 # include "WConstants.h"
 #endif
 
-#include "Config.h"
+#include "Config.ctos.h"
 #include <ESP8266WiFi.h>
 #include <map>
 #include <vector>
@@ -74,14 +74,14 @@ public:
     void rest(String method, String url, String json);
 protected:
 
-    static std::vector < CityOS * > loops;
-    static std::vector < CityOS * > intervals;
+    static std::vector<CityOS *> loops;
+    static std::vector<CityOS *> intervals;
 
-    static std::vector < String > senses;
-    static std::vector < String > controls;
+    static std::vector<String> senses;
+    static std::vector<String> controls;
 
-    static std::map < String, float > senseValues;
-    static std::map < String, float > controlValues;
+    static std::map<String, float> senseValues;
+    static std::map<String, float> controlValues;
 
     // Debug Info function
     String getMacHEX();
@@ -119,17 +119,18 @@ protected:
 
 
 // Generic template to enable << operator on streams
-template < class T >
-inline Print &operator << (Print & stream, T arg){
+template <class T>
+inline Print &operator << (Print & stream, T arg)
+{
     stream.print(arg);
     return stream;
-    }
+}
 
-    struct _BASED {
+struct _BASED {
     long val;
     int  base;
     _BASED(long v, int b) : val(v), base(b){ }
-    };
+};
 
 struct _BYTE_CODE {
     byte val;
@@ -139,37 +140,41 @@ struct _BYTE_CODE {
 
 #define _BYTE(a) _BYTE_CODE(a)
 
-inline Print &operator << (Print & obj, const _BYTE_CODE &arg){
+inline Print &operator << (Print & obj, const _BYTE_CODE &arg)
+{
     obj.write(arg.val);
     return obj;
-    }
+}
 
 #define _HEX(a) _BASED(a, HEX)
 #define _DEC(a) _BASED(a, DEC)
 #define _OCT(a) _BASED(a, OCT)
 #define _BIN(a) _BASED(a, BIN)
 
-inline Print &operator << (Print & obj, const _BASED &arg) {
+inline Print &operator << (Print & obj, const _BASED &arg)
+{
     obj.print(arg.val, arg.base);
     return obj;
-    }
+}
 
-    struct _FLOAT {
+struct _FLOAT {
     float val;
     int   digits;
     _FLOAT(double v, int d) : val(v), digits(d){ }
-    };
+};
 
-inline Print &operator << (Print & obj, const _FLOAT &arg){
+inline Print &operator << (Print & obj, const _FLOAT &arg)
+{
     obj.print(arg.val, arg.digits);
     return obj;
-    }
+}
 
-    enum _EndLineCode { endl };
+enum _EndLineCode { endl };
 
-inline Print &operator << (Print & obj, _EndLineCode arg) {
+inline Print &operator << (Print & obj, _EndLineCode arg)
+{
     obj.println();
     return obj;
-    }
+}
 
 #endif /* ifndef CITYOS_h */
