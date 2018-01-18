@@ -16,6 +16,6 @@ CityOS ctos;
 
 // Initialize PINS on all inputs and outputs
 // BME_280 bme(D3, D4, 0x76); // scl, sda, i2c address
-BME_280 bme(D4, D3); // scl, sda, 0x76 is set
+BME_280 bme(D3, D4); // scl, sda, 0x76 is set
 PMS_1003 pm(D5, D6);
 WS_2812_Ring ring(D2, 12); // Comment for RGB
