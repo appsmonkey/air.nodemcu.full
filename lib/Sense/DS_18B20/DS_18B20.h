@@ -13,10 +13,20 @@ public:
 
     float temperature;
 
-    int pin; // DHT Sensor
+    int pin; // DS_18B20 Sensor
+
 
     void interval();
 private:
     OneWire * _ds;
+
+    // indicates which chip is used DS1820, DS18S20, DS18B20 or DS1822
+    byte type_s;
+
+    byte addr[8];
+    byte i;
+    byte present = 0;
+
+    byte data[12];
 };
 #endif /* ifndef DS_18B22_H */

@@ -15,26 +15,6 @@ DS_18B20::DS_18B20(int pin = D1)
 
     temperature = 0;
 
-    sense("soil temperature");
-
-    addToInterval(this);
-}
-
-DS_18B20::~DS_18B20()
-{
-    delete _ds;
-}
-
-void DS_18B20::interval()
-{
-    byte i;
-    byte present = 0;
-    byte type_s;
-    byte data[12];
-    byte addr[8];
-    float celsius, fahrenheit;
-
-
     if (!_ds->search(addr)) {
         if (debug.errors) Serial
                 << "No more addresses." << endl;
@@ -50,11 +30,6 @@ void DS_18B20::interval()
             Serial.print(addr[i], HEX);
         }
         Serial << endl;
-    }
-
-    if (OneWire::crc8(addr, 7) != addr[7]) {
-        Serial << "CRC is not valid!" << endl;
-        return;
     }
 
     // the first ROM byte indicates which chip
@@ -87,6 +62,22 @@ void DS_18B20::interval()
             return;
     }
 
+    sense("soil temperature");
+
+    addToInterval(this);
+}
+
+DS_18B20::~DS_18B20()
+{
+    delete _ds;
+}
+
+void DS_18B20::interval()
+{
+    if (OneWire::crc8(addr, 7) != addr[7]) {
+        Serial << "CRC is not valid!" << endl;
+        return;
+    }
 
     _ds->reset();
     _ds->select(addr);
@@ -133,9 +124,7 @@ void DS_18B20::interval()
         else if (cfg == 0x40) raw = raw & ~1;  // 11 bit res, 375 ms
         //// default is 12 bit resolution, 750 ms conversion time
     }
-    celsius     = (float) raw / 16.0;
-    temperature = celsius;
-    // fahrenheit = celsius * 1.8 + 32.0;
+    temperature = (float) raw / 16.0; // celsius
 
     setSense("soil temperature", temperature);
 } // DS_18B20::interval
