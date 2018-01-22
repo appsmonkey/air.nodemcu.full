@@ -15,6 +15,7 @@ void setup()
     // ctos.debug.controls = true;
     // ctos.debug.schema   = true;
 
+    //Be nice and disable API while building hardware to spare server from junk data
     ctos.api.active = false;
 }
 
