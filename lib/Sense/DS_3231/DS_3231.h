@@ -2,6 +2,7 @@
 #define FloatSwitch_H
 
 #include "CityOS.h"
+#include "FloatSwitch.h"
 
 class FloatSwitch : public CityOS {
 public:

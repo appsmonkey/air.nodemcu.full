@@ -1,4 +1,4 @@
-// Load CityOS framework first
+/// Load CityOS framework first
 #include "CityOS.h"
 
 // We are using NodeMCU v2 board
