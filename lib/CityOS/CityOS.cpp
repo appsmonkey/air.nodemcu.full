@@ -3,8 +3,8 @@
 std::vector<String> CityOS::senses;
 std::vector<String> CityOS::controls;
 
-std::map<String, float> CityOS::senseValues;
-std::map<String, float> CityOS::controlValues;
+std::map<String, double> CityOS::senseValues;
+std::map<String, double> CityOS::controlValues;
 
 std::vector<CityOS *> CityOS::loops;
 std::vector<CityOS *> CityOS::intervals;
@@ -269,9 +269,9 @@ void CityOS::sendSenses()
         json += count;
         json += "\" : ";
 
-        float value = senseValues[sense];
+        double value = senseValues[sense];
         // Optimize traffic -- striping zeros on doubles castable to integer
-        int si = ceilf(value);
+        int si = ceil(value);
         if (value == si)
             json += si;
         else
@@ -367,8 +367,8 @@ void CityOS::printSenses()
     for (auto const& sense : senses) {
         Serial << count << ". " << sense << ": ";
 
-        float value = senseValues[sense];
-        int si      = ceilf(value);
+        double value = senseValues[sense];
+        int si       = ceil(value);
         if (value == si)
             Serial << si;
         else
@@ -388,8 +388,8 @@ void CityOS::printControls()
     for (auto const& control : controls) {
         Serial << count << ". " << control << ": ";
 
-        float value = controlValues[control];
-        int si      = ceilf(value);
+        double value = controlValues[control];
+        int si       = ceil(value);
         if (value == si)
             Serial << si;
         else
@@ -480,17 +480,22 @@ int CityOS::control(String control)
     return controls.size();
 }
 
-int CityOS::setSense(String sense, int value)
+double CityOS::setSense(String sense, int value)
 {
-    return setSense(sense, (float) value);
+    return setSense(sense, (double) value);
 }
 
-float CityOS::setSense(String sense, float value)
+double CityOS::setSense(String sense, long value)
 {
-    std::map<String, float>::iterator it;
+    return setSense(sense, (double) value);
+}
+
+double CityOS::setSense(String sense, double value)
+{
+    std::map<String, double>::iterator it;
 
     // if value on this case was never set return 0
-    float oldValue = 0;
+    double oldValue = 0;
 
     // check for exiting data
     it = senseValues.find(sense);
@@ -498,20 +503,21 @@ float CityOS::setSense(String sense, float value)
         oldValue = senseValues[sense];
 
     senseValues[sense] = value;
+    // Serial << "oldValue: " << oldValue << endl;
     return oldValue;
 }
 
 int CityOS::setControl(String control, int value)
 {
-    return setControl(control, (float) value);
+    return setControl(control, (double) value);
 }
 
-float CityOS::setControl(String control, float value)
+double CityOS::setControl(String control, double value)
 {
-    std::map<String, float>::iterator it;
+    std::map<String, double>::iterator it;
 
     // if value on this case was never set return 0
-    float oldValue = 0;
+    double oldValue = 0;
 
     // check for exiting data
     it = controlValues.find(control);

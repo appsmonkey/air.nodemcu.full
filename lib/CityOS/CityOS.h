@@ -65,11 +65,12 @@ public:
     virtual void interval();
 
     // Used in interval, returns old value
-    static int setSense(String sense, int value);
-    static float setSense(String sense, float value);
+    double setSense(String sense, int value);
+    double setSense(String sense, long value);
+    double setSense(String sense, double value);
 
     static int setControl(String control, int value);
-    static float setControl(String control, float value);
+    static double setControl(String control, double value);
 
     void rest(String method, String url, String json);
 protected:
@@ -80,8 +81,8 @@ protected:
     static std::vector<String> senses;
     static std::vector<String> controls;
 
-    static std::map<String, float> senseValues;
-    static std::map<String, float> controlValues;
+    static std::map<String, double> senseValues;
+    static std::map<String, double> controlValues;
 
     // Debug Info function
     String getMacHEX();
@@ -157,13 +158,13 @@ inline Print &operator << (Print & obj, const _BASED &arg)
     return obj;
 }
 
-struct _FLOAT {
-    float val;
-    int   digits;
-    _FLOAT(double v, int d) : val(v), digits(d){ }
+struct _double {
+    double val;
+    int    digits;
+    _double(double v, int d) : val(v), digits(d){ }
 };
 
-inline Print &operator << (Print & obj, const _FLOAT &arg)
+inline Print &operator << (Print & obj, const _double &arg)
 {
     obj.print(arg.val, arg.digits);
     return obj;
