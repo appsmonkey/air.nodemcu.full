@@ -29,9 +29,9 @@ void BH_1750::interval()
 {
     // Read lux
     lux = _lightMeter->readLightLevel();
-    if (lux == 0)
+    if (lux == 0) {
         delay(1000);
-    lux = _lightMeter->readLightLevel();
-
+        lux = _lightMeter->readLightLevel();
+    }
     setSense("light lux", lux);
 }
