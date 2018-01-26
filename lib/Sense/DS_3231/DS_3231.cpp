@@ -31,7 +31,7 @@ void DS_3231::interval()
     readClockTime();
     long int ut = now();
 
-    if (ut > 2000000000 || ut < 0) {
+    if (ut > 2000000000 || ut < 1517000000) {
         if (debug.errors) {
             Serial
                 << ut
@@ -42,6 +42,7 @@ void DS_3231::interval()
         // setTime(1); // reset to zero
         return;
     }
+    long int ut = now();
 
     setSense("time unixtime", now());
 } // DS_3231::interval
@@ -209,8 +210,8 @@ void DS_3231::readClockTime()
         if (debug.errors) {
             Serial
                 << t.year << " year, right :),"
-                << " Real Time Clock not available"
-                << " will try NTP only if Internet is available" << endl;
+                << " Real Time Clock is NOT available"
+                << " will use NTP only if Internet is available" << endl;
         }
         return;
     } else {
