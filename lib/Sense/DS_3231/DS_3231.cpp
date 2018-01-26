@@ -34,10 +34,8 @@ void DS_3231::interval()
     if (ut > 2000000000 || ut < 1517000000) {
         if (debug.errors) {
             Serial
-                << ut
-                << " ut : Something is wrong with Real Time Clock hardware"
-                << " probably not connected properly,"
-                << " will try to sync to NTP if internet awailable" << endl;
+                << " Real Time Clock is NOT available"
+                << " will use NTP only if Internet is available" << endl;
         }
         // setTime(1); // reset to zero
         return;
@@ -120,8 +118,8 @@ void DS_3231::ntpUpdate()
             state = STATE_WAIT;
         }
     } else if (state == STATE_WAIT) {
-        // update every NTP_UPDATE_EVERY in milliseconds
-        if ((millis() - lastUpdate) < NTP_UPDATE_EVERY) {
+        // update is good and update every NTP_UPDATE_EVERY in milliseconds
+        if ((now() > 1517000000) && (millis() - lastUpdate) < NTP_UPDATE_EVERY) {
             yield();
             return;
         }
@@ -206,9 +204,9 @@ void DS_3231::readClockTime()
     t.year      = bcdToInt(Wire.read()) + 2000;
 
     if (t.year > 2034 || t.year < 2018) { // clock not present - crazy values - or this code survived for far too long :)
-        if (debug.errors) {
+        if (info) {
             Serial
-                << t.year << " year, right :),"
+                << " Year: " << t.year << " | "
                 << " Real Time Clock is NOT available"
                 << " will use NTP only if Internet is available" << endl;
         }
