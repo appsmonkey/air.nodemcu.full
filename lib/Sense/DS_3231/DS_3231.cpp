@@ -29,7 +29,21 @@ void DS_3231::interval()
 {
     ntpUpdate();
     readClockTime();
-    setSense("time unixtime", (long) now());
+    long int ut = now();
+
+    if (ut > 2000000000 || ut < 0) {
+        if (debug.errors) {
+            Serial
+                << ut
+                << " ut : Something is wrong with Real Time Clock hardware"
+                << " probably not connected properly,"
+                << " will try to sync to NTP if internet awailable" << endl;
+        }
+        // setTime(1); // reset to zero
+        return;
+    }
+
+    setSense("time unixtime", now());
 } // DS_3231::interval
 
 void DS_3231::ntpUpdate()
@@ -191,14 +205,27 @@ void DS_3231::readClockTime()
     t.month     = bcdToInt(Wire.read());
     t.year      = bcdToInt(Wire.read()) + 2000;
 
-    setTime(t.hour, t.minute, t.second, t.day, t.month, t.year);
-    t.unixtime = now();
+    if (t.year > 2034 || t.year < 2018) { // clock not present - crazy values - or this code survived for far too long :)
+        if (debug.errors) {
+            Serial
+                << t.year << " year, right :),"
+                << " Real Time Clock not available"
+                << " will try NTP only if Internet is available" << endl;
+        }
+        return;
+    } else {
+        Serial
+            << t.year << " year, right :) ";
+        setTime(t.hour, t.minute, t.second, t.day, t.month, t.year);
+        t.unixtime = now();
+    }
+
     if (info) {
         Serial << "Time set to Unix time: " << t.unixtime << endl;
         Serial << hour() << ":" << minute() << ":" << second() << " "
                << day() << "/" << month() << "/" << year() << endl;
     }
-}
+} // DS_3231::readClockTime
 
 void DS_3231::printClockTime()
 {
