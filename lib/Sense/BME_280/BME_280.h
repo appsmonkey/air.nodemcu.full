@@ -45,28 +45,4 @@ private:
     void setup(int scl, int sda, int i2c);
 };
 
-// class BME_280 : public CityOS {
-// public:
-//
-//     BME_280(int scl, int sda);
-//
-//     struct _in {
-//         // BME_280 Sensor
-//         float temperature;
-//         float humidity;
-//         float temperature_feel;
-//         float pressure;
-//         float altitude;
-//     } in;
-//
-//     unsigned long delayTime;
-//     int scl; // I2C serial clock
-//     int sda; // I2C data
-//
-//     void interval();
-//
-//
-// private:
-//     Adafruit_BME280 bme; // I2C
-// };
 #endif /* ifndef BME_280_H */

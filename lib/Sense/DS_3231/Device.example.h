@@ -11,4 +11,4 @@
 CityOS ctos;
 
 // Initialize PINS on all inputs and outputs
-DS_3231 ds(D1, D2);
+DS_3231 ds(D1, D2); // SCL, SDA

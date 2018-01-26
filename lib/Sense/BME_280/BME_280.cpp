@@ -17,7 +17,7 @@ void BME_280::setup(int scl = D3, int sda = D4, int i2c = 0x76)
 {
     _bme  = new Adafruit_BME280();
     _wire = new TwoWire();
-    _wire->begin(scl, sda);
+    _wire->begin(sda, scl);
     _bme->begin(i2c, _wire);
 
     in.temperature      = 0;
