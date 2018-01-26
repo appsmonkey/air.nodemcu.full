@@ -5,6 +5,12 @@
 
 class YL_39_69 : public CityOS {
 public:
+
+    // Fine tune using these two
+    int top    = 1024;
+    int bottom = 550;
+    bool info  = false;
+
     YL_39_69(int power, int read);
     YL_39_69(int power);
 
