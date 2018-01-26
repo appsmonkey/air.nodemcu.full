@@ -3,7 +3,7 @@
 BH_1750::BH_1750(int scl, int sda)
 {
     _lightMeter = new BH1750(0x23);
-    Wire.begin(scl, sda);
+    Wire.begin(sda, scl);
 
     // _lightMeter->begin(BH1750::ONE_TIME_HIGH_RES_MODE);
     // if (!_lightMeter->begin(BH1750::CONTINUOUS_HIGH_RES_MODE)) {
