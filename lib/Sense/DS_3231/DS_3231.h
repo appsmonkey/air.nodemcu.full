@@ -22,7 +22,7 @@ public:
         int unixtime;
     } t;
 
-    bool info = true;
+    bool info = false;
 
     DS_3231(int scl, int sda);
 
