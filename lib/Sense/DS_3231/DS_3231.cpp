@@ -42,7 +42,6 @@ void DS_3231::interval()
         // setTime(1); // reset to zero
         return;
     }
-    long int ut = now();
 
     setSense("time unixtime", now());
 } // DS_3231::interval
