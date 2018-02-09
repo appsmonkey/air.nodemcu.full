@@ -36,21 +36,42 @@ void YL_39_69::interval()
     // Turn it off with digital pin
     digitalWrite(pin.power, LOW);
 
-    Serial << "Value: " << value << " - calculated to " << (1023 - value) << " - Moisture: " << moisture << endl;
-    //             << "ERROR| Failed to read from DHT sensor (humidity & temperature set to 0)!"
-    // Check if any reads failed and exit early (will try again).
     if (isnan(value)) {
         if (debug.errors) Serial
                 << "ERROR| Failed to read from YL moisture sensor!" << endl;
         return;
     }
 
-    if (value < 100) {
-        if (debug.errors) Serial
-                << "ERROR| Failed to read from YL moisture sensor - YL 39 probably not connected!" << endl;
-        return;
+    moisture = map(value, top, bottom, 0, 100); // These values need to be finetuned
+    // moisture = map(value, 1024, 0, 0, 100); // 1024 and 0 are very unlikely
+
+    if (info) {
+        Serial
+            << "Value (1024 - 0): " << value << endl
+            << "Reversed (0 - 1024): " << (1024 - value) << endl
+            << "Moisture: " << moisture << endl;
     }
 
-    moisture = map(value, 940, 553, 0, 100);
+
+    if (value < 0 || moisture > 100) {
+        if (debug.errors) {
+            Serial
+                << "ERROR| Value on YL 39/69 too big" << endl
+                << "moisture: " << moisture << endl
+                << "reseting to 100";
+        }
+        moisture = 100;
+    }
+
+    if (value > 1024 || moisture < 0) {
+        if (debug.errors) {
+            Serial
+                << "ERROR| Value on YL 39/69 negative" << endl
+                << "moisture: " << moisture << endl
+                << "reseting to 0";
+        }
+        moisture = 0;
+    }
+
     setSense("soil moisture", moisture);
-}
+} // YL_39_69::interval
