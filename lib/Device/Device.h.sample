@@ -4,13 +4,13 @@
 // We are using NodeMCU v2 board
 #include "NodeMCU.h"
 
-// Add output
-// #include "WS_2812_Ring.h"
-
 // Add inputs (sensors) header files
 // #include "BME_280.h"
 // #include "PMS_1003.h"
 // #include "DHT_22.h"
+
+// Add output
+// #include "WS_2812_Ring.h"
 
 // Accesss to all data
 CityOS ctos;
