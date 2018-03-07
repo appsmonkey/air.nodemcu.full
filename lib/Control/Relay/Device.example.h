@@ -11,4 +11,4 @@
 CityOS ctos;
 
 // Initialize PINS on all inputs and outputs
-Relay light(D1, true);
+Relay light(D1, true); // pin for control, is normally open
