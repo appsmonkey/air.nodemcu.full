@@ -1,10 +1,32 @@
 #include "Relay.h"
 
+int Relay::count = 0;
+
 Relay::Relay(int p, bool isNormallyOpen)
 {
     pin = p;
     normallyOpen = isNormallyOpen;
     pinMode(pin, OUTPUT);
+    count++;
+
+    name = "relay ";
+    name.concat(count);
+    sense(name);
+
+    addToInterval(this);
+}
+
+Relay::Relay(int p, bool isNormallyOpen, String _name)
+{
+    pin = p;
+    normallyOpen = isNormallyOpen;
+    pinMode(pin, OUTPUT);
+    count++;
+
+    name = _name;
+    sense(name);
+
+    addToInterval(this);
 }
 
 bool Relay::getState()
@@ -38,4 +60,12 @@ void Relay::off()
         state = false;
     }
     digitalWrite(pin, state);
+}
+
+void Relay::interval()
+{
+    if (getState())
+        setSense(name, 1);
+    else
+        setSense(name, 0);
 }
