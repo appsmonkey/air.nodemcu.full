@@ -180,7 +180,7 @@ void DS_3231::setClockTime()
     Wire.write(0);                         // set next input to start at the seconds register
     Wire.write(intToBcd(second()));        // set seconds
     Wire.write(intToBcd(minute()));        // set minutes
-    Wire.write(intToBcd(second()));        // set hours
+    Wire.write(intToBcd(hour()));          // set hours
     Wire.write(intToBcd(weekday()));       // set day of week (1=Sunday, 7=Saturday)
     Wire.write(intToBcd(day()));           // set date (1 to 31)
     Wire.write(intToBcd(month()));         // set month
