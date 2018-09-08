@@ -87,12 +87,12 @@ void PMS_1003::setPM2_5Range()
     // Asia
     // int ranges[5] = { 30, 60, 90, 120, 250 };
 
-    for (int i = 0; i < sizeof(ranges); i++)
+    for (int i = 0; i < (sizeof(ranges) / sizeof(int)); i++)
         if (senseValues["air pm 2.5"] < ranges[i]) {
             setSense("air pm 2.5 range", i);
             return;
         }
-    setSense("air pm 2.5 range", (int) sizeof(ranges));
+    setSense("air pm 2.5 range", (int) (sizeof(ranges) / sizeof(int)));
 }
 
 void PMS_1003::setPM10Range()
@@ -103,13 +103,13 @@ void PMS_1003::setPM10Range()
     // Asia
     // int ranges[5] = { 50, 100, 250, 350, 430 };
 
-    for (int i = 0; i < sizeof(ranges); i++)
+    for (int i = 0; i < (sizeof(ranges) / sizeof(int)); i++)
         if (senseValues["air pm 10"] < ranges[i]) {
             setSense("air pm 10 range", i);
             return;
         }
 
-    setSense("air pm 10 range", (int) sizeof(ranges));
+    setSense("air pm 10 range", (int) (sizeof(ranges) / sizeof(int)));
 }
 
 void PMS_1003::setWorstRange()
