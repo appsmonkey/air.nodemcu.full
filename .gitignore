@@ -6,3 +6,5 @@
 lib/Config/Config.h
 lib/Config/Config.ctos.h
 Air/Air.ino.cpp
+
+.vscode
