@@ -1,5 +1,5 @@
 #include <Adafruit_NeoPixel.h>
-#include <NeoPatterns.h>
+#include "NeoPatterns.h"
 
 // Constructor - calls base-class constructor to initialize strip
 NeoPatterns::NeoPatterns(uint16_t pixels, uint8_t pin)

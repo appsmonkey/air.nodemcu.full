@@ -21,7 +21,7 @@ void YL_39_69::setup(int power, int read)
     pinMode(pin.power, OUTPUT);
     digitalWrite(pin.power, LOW);
 
-    sense("soil moisture");
+    sense(config["SOIL_MOISTURE"]);
 
     addToInterval(this);
 }
@@ -73,5 +73,5 @@ void YL_39_69::interval()
         moisture = 0;
     }
 
-    setSense("soil moisture", moisture);
+    setSense(config["SOIL_MOISTURE"], moisture);
 } // YL_39_69::interval

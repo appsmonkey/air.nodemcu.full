@@ -7,10 +7,10 @@ DHT_22::DHT_22(int pin = D1)
     in.temperature      = 0;
     in.humidity         = 0;
     in.temperature_feel = 0;
-
-    sense("air temperature");
-    sense("air humidity");
-    sense("air temperature_feel");
+    
+    sense(config["AIR_TEMPERATURE"]);
+    sense(config["AIR_HUMIDITY"]);
+    sense(config["AIR_TEMPERATURE_FEEL"]);
 
     addToInterval(this);
 }
@@ -37,7 +37,7 @@ void DHT_22::interval()
         // Computes temperature values in Celsius and Humidity
         in.temperature_feel = _dht->computeHeatIndex(in.temperature, in.humidity, false);
     }
-    setSense("air temperature", in.temperature);
-    setSense("air humidity", in.humidity);
-    setSense("air temperature_feel", in.temperature_feel);
+    setSense(config["AIR_TEMPERATURE"], in.temperature);
+    setSense(config["AIR_HUMIDITY"], in.humidity);
+    setSense(config["AIR_TEMPERATURE_FEEL"], in.temperature_feel);
 }

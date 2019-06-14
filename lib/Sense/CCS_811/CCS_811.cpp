@@ -20,8 +20,8 @@ void CCS_811::setup(int scl = D3, int sda = D4, int i2c = 0x5A)
     in.eco2 = 0;
     in.tvoc = 0;
 
-    sense("air eco2");
-    sense("air tvoc");
+    sense(config["AIR_ECO_2"]);
+    sense(config["AIR_TVOC"]);
 
     addToInterval(this);
 }
@@ -44,7 +44,7 @@ void CCS_811::interval()
         return;
     }
 
-    setSense("air eco2", in.eco2);
-    setSense("air tvoc", in.tvoc);
+    setSense(config["AIR_ECO_2"], in.eco2);
+    setSense(config["AIR_TVOC"], in.tvoc);
 
 } // CCS_811::interval

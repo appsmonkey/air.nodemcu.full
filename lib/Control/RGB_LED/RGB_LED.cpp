@@ -6,8 +6,8 @@ RGB_LED::RGB_LED(int red, int green, int blue)
     pin.green = green;
     pin.blue  = blue;
 
-    listen = "air aqi range";
-
+    // listen = "air aqi range";
+    listen = config["AIR_AQI_RANGE"]; 
     // Turn it on
     pinMode(pin.red, OUTPUT);
     pinMode(pin.green, OUTPUT);
@@ -36,7 +36,7 @@ void RGB_LED::interval()
             << "RGB LED | Listening set to: " << listen << endl;
     }
 
-    int current_range = (int) senseValues[listen];
+    int current_range = (int) senseValues[listen].value;
 
     // no need to update if same as last
     if (current_range == last_range) {

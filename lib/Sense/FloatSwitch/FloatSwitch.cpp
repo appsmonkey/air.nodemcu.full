@@ -7,7 +7,7 @@ FloatSwitch::FloatSwitch(int fs_pin)
 
     pinMode(pin, INPUT_PULLUP);
 
-    sense("water level switch");
+    sense(config["WATER_LEVEL_SWITCH"]);
 
     addToInterval(this);
 }
@@ -19,5 +19,6 @@ void FloatSwitch::interval()
     else
         on = 1;
 
-    setSense("water level switch", on);
+    setSense(config["WATER_LEVEL_SWITCH"], on);
+
 }

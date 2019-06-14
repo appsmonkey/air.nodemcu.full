@@ -3,13 +3,13 @@
 PM_SIM::PM_SIM()
 {
     pm = -1;
-    sense("air pm 1");
-    sense("air pm 2.5");
-    sense("air pm 10");
+    sense(config["AIR_PM_1"]);
+    sense(config["AIR_PM_2P5"]);
+    sense(config["AIR_PM_10"]);
 
-    sense("air aqi range");
-    sense("air pm 2.5 range");
-    sense("air pm 10 range");
+    sense(config["AIR_AQI_RANGE"]);
+    sense(config["AIR_PM_2P5_RANGE"]);
+    sense(config["AIR_PM_10_RANGE"]);
 
     addToLoop(this);
 }
@@ -18,17 +18,17 @@ PM_SIM::PM_SIM(int set)
 {
     pm = set;
 
-    sense("air pm 1");
-    sense("air pm 2.5");
-    sense("air pm 10");
+    sense(config["AIR_PM_1"]);
+    sense(config["AIR_PM_2P5"]);
+    sense(config["AIR_PM_10"]);
 
-    sense("air aqi range");
-    sense("air pm 2.5 range");
-    sense("air pm 10 range");
+    sense(config["AIR_AQI_RANGE"]);
+    sense(config["AIR_PM_2P5_RANGE"]);
+    sense(config["AIR_PM_10_RANGE"]);
 
-    setSense("air pm 1", pm);
-    setSense("air pm 2.5", pm);
-    setSense("air pm 10", pm);
+    setSense(config["AIR_PM_1"], pm);
+    setSense(config["AIR_PM_2P5"], pm);
+    setSense(config["AIR_PM_10"], pm);
 
     setWorstRange();
 
@@ -62,9 +62,9 @@ void PM_SIM::loop()
     if (pm1 >= 300 || pm1 <= 0)
         step = -step;
 
-    setSense("air pm 1", pm1);
-    setSense("air pm 2.5", pm2_5);
-    setSense("air pm 10", pm10);
+    setSense(config["AIR_PM_1"], pm1);
+    setSense(config["AIR_PM_2P5"], pm2_5);
+    setSense(config["AIR_PM_10"], pm10);
 
     setWorstRange();
 } // PM_SIM::interval
@@ -79,12 +79,12 @@ void PM_SIM::setPM2_5Range()
     // int ranges[5] = { 30, 60, 90, 120, 250 };
 
     for (int i = 0; i < sizeof(ranges); i++)
-        if (senseValues["air pm 2.5"] < ranges[i]) {
-            setSense("air pm 2.5 range", i);
+        if (senseValues[config["AIR_PM_2P5"]].value < ranges[i]) {
+            setSense(config["AIR_PM_2P5_RANGE"], i);
             return;
         }
 
-    setSense("air pm 2.5 range", (int) sizeof(ranges));
+    setSense(config["AIR_PM_2P5_RANGE"], (int) sizeof(ranges));
 }
 
 void PM_SIM::setPM10Range()
@@ -96,12 +96,12 @@ void PM_SIM::setPM10Range()
     // int ranges[5] = { 50, 100, 250, 350, 430 };
 
     for (int i = 0; i < sizeof(ranges); i++)
-        if (senseValues["air pm 10"] < ranges[i]) {
-            setSense("air pm 10 range", i);
+        if (senseValues[config["AIR_PM_10"]].value < ranges[i]) {
+            setSense(config["AIR_PM_10_RANGE"], i);
             return;
         }
 
-    setSense("air pm 10 range", (int) sizeof(ranges));
+    setSense(config["AIR_PM_10_RANGE"], (int) sizeof(ranges));
 }
 
 void PM_SIM::setWorstRange()
@@ -109,10 +109,10 @@ void PM_SIM::setWorstRange()
     setPM2_5Range();
     setPM10Range();
 
-    int r2_5 = senseValues["air pm 2.5 range"];
-    int r10  = senseValues["air pm 10 range"];
+    int r2_5 = senseValues[config["AIR_PM_2P5_RANGE"]];
+    int r10  = senseValues[config["AIR_PM_10_RANGE"]];
 
     int range = r2_5 > r10 ? r2_5 : r10;
 
-    setSense("air aqi range", range);
+    setSense(config["AIR_AQI_RANGE"], range);
 }

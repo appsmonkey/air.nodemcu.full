@@ -6,13 +6,13 @@ PMS_1003::PMS_1003(int rx, int tx)
     pin.rx = rx;
     pin.tx = tx;
 
-    sense("air pm 1");
-    sense("air pm 2.5");
-    sense("air pm 10");
+    sense(config["AIR_PM_1"]);
+    sense(config["AIR_PM_2P5"]);
+    sense(config["AIR_PM_10"]);
 
-    sense("air aqi range");
-    sense("air pm 2.5 range");
-    sense("air pm 10 range");
+    sense(config["AIR_AQI_RANGE"]);
+    sense(config["AIR_PM_2P5_RANGE"]);
+    sense(config["AIR_PM_10_RANGE"]);
 
     addToInterval(this);
 }
@@ -32,6 +32,7 @@ void PMS_1003::interval()
     if (!_swSer->find(0x42)) {
         if (debug.errors) Serial
                 << "ERROR: PM Sensor not functional" << endl;
+        delete _swSer;        
         return;
     }
 
@@ -43,9 +44,9 @@ void PMS_1003::interval()
 
     if (buf[0] == 0x4d) {
         if (checkValue(buf, LENG)) {
-            setSense("air pm 1", read16Bits(buf, 3));
-            setSense("air pm 2.5", read16Bits(buf, 5));
-            setSense("air pm 10", read16Bits(buf, 7));
+            setSense(config["AIR_PM_1"], read16Bits(buf, 3));
+            setSense(config["AIR_PM_2P5"], read16Bits(buf, 5));
+            setSense(config["AIR_PM_10"], read16Bits(buf, 7));
 
             setWorstRange();
         }
@@ -88,11 +89,11 @@ void PMS_1003::setPM2_5Range()
     // int ranges[5] = { 30, 60, 90, 120, 250 };
 
     for (int i = 0; i < (sizeof(ranges) / sizeof(int)); i++)
-        if (senseValues["air pm 2.5"] < ranges[i]) {
-            setSense("air pm 2.5 range", i);
+        if (senseValues[config["AIR_PM_2P5"]].value < ranges[i]) {
+            setSense(config["AIR_PM_2P5_RANGE"], i);
             return;
         }
-    setSense("air pm 2.5 range", (int) (sizeof(ranges) / sizeof(int)));
+    setSense(config["AIR_PM_2P5_RANGE"], (int) (sizeof(ranges) / sizeof(int)));
 }
 
 void PMS_1003::setPM10Range()
@@ -104,12 +105,12 @@ void PMS_1003::setPM10Range()
     // int ranges[5] = { 50, 100, 250, 350, 430 };
 
     for (int i = 0; i < (sizeof(ranges) / sizeof(int)); i++)
-        if (senseValues["air pm 10"] < ranges[i]) {
-            setSense("air pm 10 range", i);
+        if (senseValues[config["AIR_PM_10"]].value < ranges[i]) {
+            setSense(config["AIR_PM_10_RANGE"], i);
             return;
         }
 
-    setSense("air pm 10 range", (int) (sizeof(ranges) / sizeof(int)));
+    setSense(config["AIR_PM_10_RANGE"], (int) (sizeof(ranges) / sizeof(int)));
 }
 
 void PMS_1003::setWorstRange()
@@ -117,12 +118,12 @@ void PMS_1003::setWorstRange()
     setPM2_5Range();
     setPM10Range();
 
-    int r2_5 = senseValues["air pm 2.5 range"];
-    int r10  = senseValues["air pm 10 range"];
+    int r2_5 = senseValues[config["AIR_PM_2P5_RANGE"]].value;
+    int r10  = senseValues[config["AIR_PM_10_RANGE"]].value;
 
     int range = r2_5 > r10 ? r2_5 : r10;
 
-    setSense("air aqi range", range);
+    setSense(config["AIR_AQI_RANGE"], range);
 
     /*
      * {

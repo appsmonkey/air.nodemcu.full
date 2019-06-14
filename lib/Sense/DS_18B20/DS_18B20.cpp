@@ -62,7 +62,7 @@ DS_18B20::DS_18B20(int pin = D1)
             return;
     }
 
-    sense("soil temperature");
+    sense(config["SOIL_TEMPERATURE"]);
 
     addToInterval(this);
 }
@@ -126,5 +126,5 @@ void DS_18B20::interval()
     }
     temperature = (float) raw / 16.0; // celsius
 
-    setSense("soil temperature", temperature);
+    setSense(config["SOIL_TEMPERATURE"], temperature);
 } // DS_18B20::interval

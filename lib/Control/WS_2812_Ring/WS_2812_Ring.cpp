@@ -3,7 +3,8 @@
 WS_2812_Ring::WS_2812_Ring(int pin, int count) : ring(count, pin)
 {
     control("led ring - 6 levels");
-    listen = "air aqi range";
+    // listen = "air aqi range";
+    listen = config["AIR_AQI_RANGE"];
     addToLoop(this);
 
     ring.begin();
@@ -45,7 +46,7 @@ void WS_2812_Ring::loop()
             << "LED RING | Listening set to: " << listen << endl;
     }
 
-    int current_range = (int) senseValues[listen];
+    int current_range = (int) senseValues[listen].value;
 
     if (last_range != current_range) {
         int colors[6][3] = {

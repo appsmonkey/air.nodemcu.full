@@ -14,6 +14,25 @@
 #include <map>
 #include <vector>
 #include <string>
+#include "Utils.h"
+#include <AwsMqttClient.h>
+#include <ArduinoJson.h>
+#include <WiFiManager.h> 
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+
+//capacity of DynamicJsonDocument generated on 
+//https://arduinojson.org/v5/assistant/ for 
+//config.json
+static const size_t JSON_CAPACITY= JSON_OBJECT_SIZE(28) + 590;
+
+struct _SENSEVALUE {
+    double oldValue = 0;
+    double value =0;
+    bool operator<(const _SENSEVALUE& s) const{
+        return (this->value < s.value);
+    }
+};
 
 class CityOS {
 public:
@@ -30,6 +49,7 @@ public:
         bool memory    = false;
         bool senses    = false;
         bool controls  = false;
+        bool config    = false; 
     } debug;
 
     struct _API {
@@ -57,6 +77,13 @@ public:
         int  port;
     } webserver;
 
+    struct _DEVICE
+    {
+        String thing;
+        String location;
+    } device;
+    
+
     // Arduino loop() func every time
     void setup();
     virtual void loop();
@@ -73,6 +100,8 @@ public:
     static double setControl(String control, double value);
 
     void rest(String method, String url, String json);
+    //loads config from SPIFFS
+    bool loadConfig();
 protected:
 
     static std::vector<CityOS *> loops;
@@ -81,8 +110,12 @@ protected:
     static std::vector<String> senses;
     static std::vector<String> controls;
 
-    static std::map<String, double> senseValues;
+    static std::map<String, _SENSEVALUE> senseValues;
     static std::map<String, double> controlValues;
+
+    static std::map<String, double> old_senseValues;
+    //map to hold config value from SPIFFS config.json
+    static std::map<String, String> config;
 
     // Debug Info function
     String getMacHEX();
@@ -97,13 +130,23 @@ protected:
     virtual void addToInterval(CityOS *);
 
     // Used in Setup - Parse schema JSON and send it to server
+    String getSchema();
     void sendSchema();
     void sendSenses();
+    String getChangedData();
+    String getAllData();
     void requestControls();
     void handleControls();
+    void handleMessages(const char* topic, const char* msg);
+    void ntpConnect();
+    String getTopic();
 
-    WiFiServer * _server;
-    WiFiClient _client;
+    AwsMqttClient* _awsMqttClient; 
+
+    NTPClient ntpClient;
+    WiFiUDP wifiUDP;
+
+    unsigned long timeStamp;
 
     void serveHTML();
     const char * HTMLHead();
@@ -113,69 +156,10 @@ protected:
     void printWifiStatus();
     void printHeapSize();
     void printSenses();
-    void printControls();
+    void printControls();     
+
 };
 
-// - - - - - - - - - - - - - //
 
-
-// Generic template to enable << operator on streams
-template <class T>
-inline Print &operator << (Print & stream, T arg)
-{
-    stream.print(arg);
-    return stream;
-}
-
-struct _BASED {
-    long val;
-    int  base;
-    _BASED(long v, int b) : val(v), base(b){ }
-};
-
-struct _BYTE_CODE {
-    byte val;
-    _BYTE_CODE(byte v) : val(v)
-    { }
-};
-
-#define _BYTE(a) _BYTE_CODE(a)
-
-inline Print &operator << (Print & obj, const _BYTE_CODE &arg)
-{
-    obj.write(arg.val);
-    return obj;
-}
-
-#define _HEX(a) _BASED(a, HEX)
-#define _DEC(a) _BASED(a, DEC)
-#define _OCT(a) _BASED(a, OCT)
-#define _BIN(a) _BASED(a, BIN)
-
-inline Print &operator << (Print & obj, const _BASED &arg)
-{
-    obj.print(arg.val, arg.base);
-    return obj;
-}
-
-struct _double {
-    double val;
-    int    digits;
-    _double(double v, int d) : val(v), digits(d){ }
-};
-
-inline Print &operator << (Print & obj, const _double &arg)
-{
-    obj.print(arg.val, arg.digits);
-    return obj;
-}
-
-enum _EndLineCode { endl };
-
-inline Print &operator << (Print & obj, _EndLineCode arg)
-{
-    obj.println();
-    return obj;
-}
 
 #endif /* ifndef CITYOS_h */

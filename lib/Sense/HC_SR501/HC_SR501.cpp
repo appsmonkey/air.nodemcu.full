@@ -11,13 +11,11 @@ HC_SR501::HC_SR501(int pin, unsigned long calibrateTime, unsigned long updateInt
     this->calibrateTime = calibrateTime*1000;
     this->updateInterval = updateInterval*1000;
 
-    sense("motion");
+    sense(config["MOTION"]);
     //intrval is used to send data to server
     addToInterval(this);
     //loop is used to poll motion sensor for a change
-    addToLoop(this);
-
-    
+    addToLoop(this);    
 
 }
 
@@ -58,7 +56,7 @@ void HC_SR501::loop(){
 }
 
 void HC_SR501::interval(){
-  setSense("motion", pirState);
+  setSense(config["MOTION"], pirState);
   pirState=LOW;
 }
 

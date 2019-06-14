@@ -8,3 +8,4 @@ lib/Config/Config.ctos.h
 Air/Air.ino.cpp
 
 .vscode
+data/
