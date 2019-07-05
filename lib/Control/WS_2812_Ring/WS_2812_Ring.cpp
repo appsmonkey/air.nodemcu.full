@@ -58,7 +58,7 @@ void WS_2812_Ring::loop()
             {  255,   1,   1 } // red
         };
 
-        if (current_range >= sizeof(colors))
+        if (current_range >= (int)sizeof(colors))
             current_range = sizeof(colors) - 1;
 
         uint32_t new_color = ring.Color(colors[current_range][0], colors[current_range][1], colors[current_range][2]);

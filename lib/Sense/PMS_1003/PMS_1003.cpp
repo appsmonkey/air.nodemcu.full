@@ -5,7 +5,7 @@ PMS_1003::PMS_1003(int rx, int tx)
 {
     pin.rx = rx;
     pin.tx = tx;
-
+    _swSer = new SoftwareSerial(pin.rx, pin.tx);
     sense(config["AIR_PM_1"]);
     sense(config["AIR_PM_2P5"]);
     sense(config["AIR_PM_10"]);
@@ -18,21 +18,31 @@ PMS_1003::PMS_1003(int rx, int tx)
 }
 
 void PMS_1003::interval()
-{
-    SoftwareSerial * _swSer;
-
-    _swSer = new SoftwareSerial(pin.rx, pin.tx);
+{    
     _swSer->begin(9600); // PM Serial
     // set the Timeout to 1500ms
     // longer than the data transmission periodic time of the sensor
     // which is 1000ms
     _swSer->setTimeout(1500);
 
+    while (_swSer->available()) {
+        _swSer->read();           // empty the RX buffer
+    }
+    _swSer->flush();
+    
+    uint16_t wait_ms; // time spent waiting for new sample
+    uint32_t start_ms = millis();   // start waiting time
+    do {                            // ~650ms to complete a measurements
+        delay(10);                    // wait up to max_wait_ms
+        wait_ms = millis()-start_ms;  // time waited so far
+    } while (!_swSer->available() && wait_ms<max_wait_ms);
+
+
     // start to read when detect 0x42 (PM)
     if (!_swSer->find(0x42)) {
         if (debug.errors) Serial
                 << "ERROR: PM Sensor not functional" << endl;
-        delete _swSer;        
+                
         return;
     }
 
@@ -40,7 +50,7 @@ void PMS_1003::interval()
     unsigned char buf[LENG]; // 0x42 + 31 bytes equal to 32 bytes
 
     _swSer->readBytes(buf, LENG);
-    delete _swSer;
+    
 
     if (buf[0] == 0x4d) {
         if (checkValue(buf, LENG)) {
@@ -88,7 +98,7 @@ void PMS_1003::setPM2_5Range()
     // Asia
     // int ranges[5] = { 30, 60, 90, 120, 250 };
 
-    for (int i = 0; i < (sizeof(ranges) / sizeof(int)); i++)
+    for (int i = 0; i < (int)(sizeof(ranges) / sizeof(int)); i++)
         if (senseValues[config["AIR_PM_2P5"]].value < ranges[i]) {
             setSense(config["AIR_PM_2P5_RANGE"], i);
             return;
@@ -104,7 +114,7 @@ void PMS_1003::setPM10Range()
     // Asia
     // int ranges[5] = { 50, 100, 250, 350, 430 };
 
-    for (int i = 0; i < (sizeof(ranges) / sizeof(int)); i++)
+    for (int i = 0; i < (int)(sizeof(ranges) / sizeof(int)); i++)
         if (senseValues[config["AIR_PM_10"]].value < ranges[i]) {
             setSense(config["AIR_PM_10_RANGE"], i);
             return;

@@ -18,7 +18,8 @@ private:
         int rx; // PM Sensors RX PIN
         int tx; // PM Sensors TX PIN
     } pin;
-
+    static const uint16_t max_wait_ms = 1000;
+    SoftwareSerial * _swSer;
     char checkValue(unsigned char * thebuf, char leng);
     int read16Bits(unsigned char * thebuf, int offset);
 

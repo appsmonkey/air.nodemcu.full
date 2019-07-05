@@ -3,7 +3,7 @@
 
 #include "CityOS.h"
 #include <Adafruit_NeoPixel.h>
-#include <NeoPatterns.h>
+#include "NeoPatterns/NeoPatterns.h"
 
 class WS_2812_Ring: public CityOS {
 public:

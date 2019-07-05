@@ -16,13 +16,7 @@ ntpClient(wifiUDP, "pool.ntp.org")
 {
     // Print errors to Serial
     debug.errors = true;
-
-    api.active   = true;
-    api.host     = "ctos.io";
-    api.port     = 80;
-    api.deviceID = "00:00:00:00:00:00";
-    api.timeout  = 10;
-
+ 
     sensing.active   = true;
     sensing.interval = 60;
 
@@ -30,10 +24,6 @@ ntpClient(wifiUDP, "pool.ntp.org")
     // each client.connect() eats 184 bytes at a time
     // and returns it in few minutes as they timeout
 
-    wifi.ssid = WIFI_SSID;
-    wifi.pass = WIFI_PASSWORD;
-
-    // api.token = CTOS_TOKEN;  
 
     if(loadConfig()){
         _awsMqttClient = new AwsMqttClient(config["mqtt_host"], config["mqtt_port"].toInt(), config["thing"],
@@ -54,21 +44,7 @@ void CityOS::setup()
     // Start Serials
     Serial.begin(115200); // serial terminal
     
-    // Connect to WiFi network
-    if (debug.wifi) Serial
-            << "WIFI: Connecting to ssid:" << wifi.ssid << " wireless net." << endl;    
-    
-    
-    WiFiManager wifiManager;
-    
-    wifiManager.autoConnect(device.thing.c_str());
-    
-    if (debug.wifi) {
-        if (WiFi.status() == WL_CONNECTED)
-            Serial << "connected." << endl;
-        else
-            Serial << "giving up on connection for now." << endl;
-    }    
+    connectToWiFi(true);
 
     //if connected to wifi setup time, and aws
     if (WiFi.status() == WL_CONNECTED){
@@ -82,12 +58,10 @@ void CityOS::setup()
     }
        
 
-    if (debug.wifi || debug.webserver)
+    if (debug.wifi )
         printWifiStatus();
 
-    api.deviceID = getMacHEX();
-
-    Serial << "ID: " << api.deviceID << endl;
+   
     
 } // CityOS::setup
 
@@ -103,9 +77,19 @@ void CityOS::loop()
 
     if (first)
         setup();
-
+    if (WiFi.status() != WL_CONNECTED)
+    {
+        if (debug.errors || debug.wifi)
+        {
+           Serial
+                << "wifi ssid: " << WiFi.SSID() << " NOT connected." << endl;
+        }
+        
+        connectToWiFi(false);
+    }
+    
     if (sensing.active &&
-      (first || millis() - OledTimer > (sensing.interval * 1000)))
+      (first || millis() - OledTimer > (unsigned long)(sensing.interval * 1000)))
     {
         // update right away - no wait on first time
         first     = false;
@@ -193,7 +177,7 @@ String CityOS::getChangedData(){
 String CityOS::getSchema(){
     //first time or interval is bigger then sensing interval
     unsigned long oldTimeStamp = timeStamp;
-    if (timeStamp == 0 || (timeStamp - oldTimeStamp)>= (sensing.interval + 10)) {
+    if (timeStamp == 0 || (timeStamp - oldTimeStamp)>= (unsigned long)(sensing.interval + 10)) {
         return getAllData();
     }else{
         return getChangedData();
@@ -270,6 +254,56 @@ void CityOS::ntpConnect(){
     }    
 }
 
+void CityOS::connectToWiFi(bool useWiFiManager){
+       
+    WiFi.mode(WIFI_STA);
+    
+
+    if (useWiFiManager)
+    {
+        WiFiManager wifiManager;
+    
+        wifiManager.setConfigPortalTimeout(CONFIG_PORTAL_TIMEOUT); // sets timeout until configuration portal gets turned off
+        wifiManager.setConnectTimeout(40); // how long to try to connect for before continuing
+
+        if (debug.wifi) wifiManager.setDebugOutput(true);
+
+        wifiManager.startConfigPortal(device.thing.c_str());
+    }  
+
+    if (WiFi.status() != WL_CONNECTED)
+    {
+        WiFi.begin();
+        // WiFi.begin(WiFi.SSID(), WiFi.psk()); 
+        int wifi_retry_count = 1;
+        int retry_on         = 1000;
+        int retry_for        = 10;
+        while (wifi_retry_count < retry_for && WiFi.status() != WL_CONNECTED) {
+            yield();
+            delay(retry_on);
+            if (debug.wifi)
+                Serial << ".";
+
+            // Make sure you notify if WIFI is not connecting
+            // notify every 20 attempts
+            if (debug.errors && (wifi_retry_count % 20 == 0 )) {
+                Serial
+                    << "wifi ssid: " << WiFi.SSID() << " still NOT connected." << endl
+                    << "Retring for: "
+                    << (wifi_retry_count * retry_on) / 1000 << " seconds." << endl;
+            }
+            wifi_retry_count++;
+        }
+
+    }
+    
+    if (debug.wifi) {
+        if (WiFi.status() == WL_CONNECTED)
+            Serial << "connected." << endl;
+        else
+            Serial << "giving up on connection for now." << endl;
+    }    
+}
 // Debug Info Function
 void CityOS::printWifiStatus()
 {
@@ -281,8 +315,7 @@ void CityOS::printWifiStatus()
     Serial << "Connected to SSID: " << WiFi.SSID() << endl;
     Serial << "Wifi signal strength (RSSI):" << WiFi.RSSI() << " dBm" << endl;
 
-    if (debug.webserver)
-        Serial << "My Server: http://" << WiFi.localIP() << ":" << webserver.port << endl;
+    
 }
 
 // Debug Info function

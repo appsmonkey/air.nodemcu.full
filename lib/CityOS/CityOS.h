@@ -9,7 +9,7 @@
 # include "WConstants.h"
 #endif
 
-#include "Config.ctos.h"
+// #include "Config.ctos.h"
 #include <ESP8266WiFi.h>
 #include <map>
 #include <vector>
@@ -25,6 +25,8 @@
 //https://arduinojson.org/v5/assistant/ for 
 //config.json
 static const size_t JSON_CAPACITY= JSON_OBJECT_SIZE(28) + 590;
+#define CONFIG_PORTAL_TIMEOUT 40
+
 
 struct _SENSEVALUE {
     double oldValue = 0;
@@ -52,30 +54,14 @@ public:
         bool config    = false; 
     } debug;
 
-    struct _API {
-        bool   active = false;
-        String host;
-        int    port;
-        String token;    // GRID TOKEN
-        String deviceID; // GRID Device ID
-        int    timeout;  // Before giving up on requests
-    } api;
+
 
     struct _SENSING {
         bool active = false;
         int  interval;
     } sensing;
 
-    struct _WIFI {
-        bool   active = false; // WIFI SSID
-        String ssid;           // WIFI SSID
-        String pass;           // WIFI PASSWORD
-    } wifi;
 
-    struct _WEBSERVER {
-        bool active = false;
-        int  port;
-    } webserver;
 
     struct _DEVICE
     {
@@ -156,7 +142,10 @@ protected:
     void printWifiStatus();
     void printHeapSize();
     void printSenses();
-    void printControls();     
+    void printControls();  
+
+    //WiFi
+    void connectToWiFi(bool useWiFiManager);   
 
 };
 
