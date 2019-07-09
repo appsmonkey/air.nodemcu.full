@@ -77,6 +77,7 @@ void CityOS::loop()
 
     if (first)
         setup();
+    //reconect to wifi    
     if (WiFi.status() != WL_CONNECTED)
     {
         if (debug.errors || debug.wifi)
@@ -86,6 +87,11 @@ void CityOS::loop()
         }
         
         connectToWiFi(false);
+    }
+    //aws reconnect
+    if (_awsMqttClient != nullptr && !_awsMqttClient ->isConnected() && WiFi.status() == WL_CONNECTED)
+    {
+        _awsMqttClient -> connect();
     }
     
     if (sensing.active &&
@@ -123,7 +129,15 @@ void CityOS::interval()
                 handleMessages(topic, msg);                
         });
         
-    }  
+    }  else
+    {
+        if (debug.errors || debug.wifi)
+        {
+            Serial << "Could not publish data!" << endl;
+        }
+        
+    }
+    
     timeStamp=ntpClient.getEpochTime();
     // memory leaks check
     if (debug.memory)
@@ -265,10 +279,11 @@ void CityOS::connectToWiFi(bool useWiFiManager){
     
         wifiManager.setConfigPortalTimeout(CONFIG_PORTAL_TIMEOUT); // sets timeout until configuration portal gets turned off
         wifiManager.setConnectTimeout(40); // how long to try to connect for before continuing
-
+        wifiManager.setCaptivePortalEnable(false);
         if (debug.wifi) wifiManager.setDebugOutput(true);
 
         wifiManager.startConfigPortal(device.thing.c_str());
+        
     }  
 
     if (WiFi.status() != WL_CONNECTED)

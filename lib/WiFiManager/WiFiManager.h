@@ -345,7 +345,8 @@ class WiFiManager
     boolean       _removeDuplicateAPs     = true;  // remove dup aps from wifiscan
     boolean       _shouldBreakAfterConfig = false; // stop configportal on save failure
     boolean       _configPortalIsBlocking = true;  // configportal enters blocking loop 
-    boolean       _enableCaptivePortal    = true;  // enable captive portal redirection
+    // 8.7.2019 zarko.runjevac changed captive portal to false
+    boolean       _enableCaptivePortal    = false;  // enable captive portal redirection
     boolean       _userpersistent         = true;  // users preffered persistence to restore
     boolean       _wifiAutoReconnect      = true;  // there is no platform getter for this, we must assume its true and make it so
     boolean       _apClientCheck          = false; // keep cp alive if ap have station

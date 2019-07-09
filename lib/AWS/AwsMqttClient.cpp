@@ -248,13 +248,17 @@ void AwsMqttClient::connect(){
 
 void AwsMqttClient::publish(String topic, String data, SubscriptionCallback cb){  
     subscribe(topic, cb);
-    if(!isConnected()) connect();
-
+    
+    if (debug)
+    {
+        Serial << F("AwsMqttClient::publish start")<<endl;
+    }
+    
     if (!pubSubClient.publish((char*)topic.c_str(),(char*) data.c_str(), false))
     {
         Serial << F("Failed to publish. ") << getMqttConnectionError(pubSubClient.state()) << endl;
     }
-    
+
     if (debug) {
         Serial << F("AwsMqttClient::publish Ram ") << ESP.getFreeHeap() << endl; 
     } 
