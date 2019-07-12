@@ -109,8 +109,10 @@ void CityOS::loop()
     }
 
     // mqtt loop to called regularly to allow the client to process incoming messages and maintain its connection to the server.
-    _awsMqttClient -> loop(5000);        
-
+    if (_awsMqttClient != nullptr && _awsMqttClient ->isConnected())
+    {
+        _awsMqttClient -> loop(5000);  
+    }   
 } // CityOS::loop
 
 
@@ -278,7 +280,7 @@ void CityOS::connectToWiFi(bool useWiFiManager){
         WiFiManager wifiManager;
     
         wifiManager.setConfigPortalTimeout(CONFIG_PORTAL_TIMEOUT); // sets timeout until configuration portal gets turned off
-        wifiManager.setConnectTimeout(40); // how long to try to connect for before continuing
+        wifiManager.setConnectTimeout(CONFIG_PORTAL_TIMEOUT); // how long to try to connect for before continuing
         wifiManager.setCaptivePortalEnable(false);
         if (debug.wifi) wifiManager.setDebugOutput(true);
 
