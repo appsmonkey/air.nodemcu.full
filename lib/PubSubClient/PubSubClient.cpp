@@ -189,7 +189,7 @@ boolean PubSubClient::connect(const char *id, const char *user, const char *pass
             lastInActivity = lastOutActivity = millis();
 
             while (!_client->available()) {
-                yield();
+                yield(); // zarko.runjevac yield added
                 unsigned long t = millis();
                 if (t-lastInActivity >= ((int32_t) MQTT_SOCKET_TIMEOUT*1000UL)) {
                     _state = MQTT_CONNECTION_TIMEOUT;

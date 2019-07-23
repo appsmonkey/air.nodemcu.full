@@ -272,8 +272,7 @@ void CityOS::ntpConnect(){
 
 void CityOS::connectToWiFi(bool useWiFiManager){
        
-    WiFi.mode(WIFI_STA);
-    
+    WiFi.mode(WIFI_STA);    
 
     if (useWiFiManager)
     {
@@ -284,8 +283,7 @@ void CityOS::connectToWiFi(bool useWiFiManager){
         wifiManager.setCaptivePortalEnable(false);
         if (debug.wifi) wifiManager.setDebugOutput(true);
 
-        wifiManager.startConfigPortal(device.thing.c_str());
-        
+        wifiManager.startConfigPortal(device.thing.c_str());        
     }  
 
     if (WiFi.status() != WL_CONNECTED)
@@ -311,7 +309,6 @@ void CityOS::connectToWiFi(bool useWiFiManager){
             }
             wifi_retry_count++;
         }
-
     }
     
     if (debug.wifi) {

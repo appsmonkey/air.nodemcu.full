@@ -25,9 +25,12 @@
 //https://arduinojson.org/v5/assistant/ for 
 //config.json
 static const size_t JSON_CAPACITY= JSON_OBJECT_SIZE(28) + 590;
-#define CONFIG_PORTAL_TIMEOUT 40
 
+#define CONFIG_PORTAL_TIMEOUT 60            //value for config portal timeout
 
+/**
+ * Struct to hold old and current value for senses
+ */
 struct _SENSEVALUE {
     double oldValue = 0;
     double value =0;
@@ -54,21 +57,16 @@ public:
         bool config    = false; 
     } debug;
 
-
-
     struct _SENSING {
         bool active = false;
         int  interval;
     } sensing;
 
-
-
     struct _DEVICE
     {
         String thing;
         String location;
-    } device;
-    
+    } device;   
 
     // Arduino loop() func every time
     void setup();
@@ -115,16 +113,20 @@ protected:
     virtual void addToLoop(CityOS *);
     virtual void addToInterval(CityOS *);
 
-    // Used in Setup - Parse schema JSON and send it to server
-    String getSchema();
-    void sendSchema();
-    void sendSenses();
+    //Returns schema
+    String getSchema();    
+    //Returns only changed data
     String getChangedData();
+    //Returns data from all senses
     String getAllData();
+
     void requestControls();
     void handleControls();
+    //callback for handling response from AWS IOT
     void handleMessages(const char* topic, const char* msg);
+    //connect to NTP Server
     void ntpConnect();
+
     String getTopic();
 
     AwsMqttClient* _awsMqttClient; 
@@ -144,7 +146,7 @@ protected:
     void printSenses();
     void printControls();  
 
-    //WiFi
+    //conncects Boxy to WIFI
     void connectToWiFi(bool useWiFiManager);   
 
 };
