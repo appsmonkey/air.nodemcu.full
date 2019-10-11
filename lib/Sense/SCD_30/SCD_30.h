@@ -7,10 +7,9 @@
 ***************************************************************************/
 
 #include "CityOS.h"
-
 #include <Wire.h>
 #include <SPI.h>
-#include <SparkFun_SCD30_Arduino_Library.h>
+#include <paulvha_SCD30.h>
 
 class SCD_30 : public CityOS {
 public:

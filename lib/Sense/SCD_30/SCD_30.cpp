@@ -16,7 +16,7 @@ void SCD_30::setup(int scl = D3, int sda = D4, int i2c = 0x61)
     _scd  = new SCD30();
     _wire = new TwoWire();
     _wire->begin(sda, scl);
-    _scd->begin(*_wire);
+    _scd->begin();
 
     in.co2 = 0;
 
@@ -40,6 +40,6 @@ void SCD_30::interval()
                 << "ERROR| Failed to read from SCD (CO2) sensor (CO2 set to 0)!" << endl;
         return;
     }
-    
+
     setSense("air co2", in.co2);
   } // SCD_30::interval
