@@ -40,6 +40,8 @@ CityOS::CityOS()
 
 void CityOS::setup()
 {
+    // Turn off AP mode for ESP8266
+    WiFi.softAPdisconnect(true);
     // Start Serials
     Serial.begin(115200); // serial terminal
 
