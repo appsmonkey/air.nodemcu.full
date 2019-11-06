@@ -29,8 +29,8 @@ void BME_280::setup(int scl = D3, int sda = D4, int i2c = 0x76)
     sense("air temperature");
     sense("air humidity");
     sense("air temperature_feel");
-    sense("air pressure");
-    sense("air altitude");
+    // sense("air pressure");
+    // sense("air altitude");
 
     addToInterval(this);
 }
@@ -68,8 +68,8 @@ void BME_280::interval()
     setSense("air temperature", in.temperature);
     setSense("air humidity", in.humidity);
     setSense("air temperature_feel", in.temperature_feel);
-    setSense("air pressure", in.pressure);
-    setSense("air altitude", in.altitude);
+    // setSense("air pressure", in.pressure);
+    // setSense("air altitude", in.altitude);
 } // BME_280::interval
 
 // boolean isFahrenheit: True == Fahrenheit; False == Celcius

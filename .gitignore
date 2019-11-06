@@ -8,3 +8,5 @@ lib/Config/Config.ctos.h
 Air/Air.ino.cpp
 
 .vscode
+.pio
+lib/Device/Device.h
