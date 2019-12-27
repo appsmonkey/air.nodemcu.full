@@ -16,7 +16,7 @@ void setup()
     // ctos.debug.schema   = true;
 
     // Be nice and disable API while building hardware to spare server from junk data
-    // ctos.api.active = false;
+    // ctos.sensing.active = false;
 }
 
 // runs over and over again

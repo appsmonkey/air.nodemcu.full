@@ -2790,8 +2790,10 @@ void WiFiManager::handleId(){
   server->sendHeader("Expires", "-1");
   String page = F("{\"ID\":");
   page+="\""+(String)WiFi.softAPmacAddress()+"\"";
+  page += F(",\"Thing_Name\":\"");
+  page += _apName;
 
-  page += F("}");
+  page += F("\"}");
   server->send(200, "application/json", page);
   DEBUG_WM(F("Sent WiFi scan data "));
 }

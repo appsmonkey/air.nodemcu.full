@@ -20,7 +20,7 @@ DS_3231::DS_3231(int scl, int sda)
 
     ntpUpdate();
 
-    sense(config["TIME_UNIXTIME"]);
+    sense("TIME_UNIXTIME");
 
     addToInterval(this);
 }
@@ -41,7 +41,7 @@ void DS_3231::interval()
         return;
     }
 
-    setSense(config["TIME_UNIXTIME"], now());
+    setSense("TIME_UNIXTIME", now());
 } // DS_3231::interval
 
 void DS_3231::ntpUpdate()

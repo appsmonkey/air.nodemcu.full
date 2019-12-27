@@ -6,9 +6,9 @@ DHT_SIM::DHT_SIM()
     in.humidity         = 0;
     in.temperature_feel = 0;
 
-    sense(config["AIR_TEMPERATURE"]);
-    sense(config["AIR_HUMIDITY"]);
-    sense(AIR_TEMPERATURE_FEEL);
+    sense("AIR_TEMPERATURE");
+    sense("AIR_HUMIDITY");
+    sense("AIR_TEMPERATURE_FEEL");
 
     addToInterval(this);
 }
@@ -23,7 +23,7 @@ void DHT_SIM::interval()
 
     in.temperature_feel = in.temperature + (-3 + (rand() % 7));
 
-    setSense(config("AIR_TEMPERATURE"), in.temperature);
-    setSense(config["AIR_HUMIDITY"], in.humidity);
-    setSense(config["AIR_TEMPERATURE_FEEL"], in.temperature_feel);
+    setSense("AIR_TEMPERATURE", in.temperature);
+    setSense("AIR_HUMIDITY", in.humidity);
+    setSense("AIR_TEMPERATURE_FEEL", in.temperature_feel);
 }

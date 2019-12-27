@@ -26,11 +26,11 @@ void BME_280::setup(int scl = D3, int sda = D4, int i2c = 0x76)
     in.pressure         = 0;
     in.altitude         = 0;
 
-    sense(config["AIR_TEMPERATURE"]);
-    sense(config["AIR_HUMIDITY"]);
-    sense(config["AIR_TEMPERATURE_FEEL"]);
-    sense(config["AIR_PRESSURE"]);
-    sense(config["AIR_ALTITUDE"]);
+    sense("AIR_TEMPERATURE");
+    sense("AIR_HUMIDITY");
+    sense("AIR_TEMPERATURE_FEEL");
+    sense("AIR_PRESSURE");
+    sense("AIR_ALTITUDE");
 
     addToInterval(this);
 }
@@ -65,11 +65,11 @@ void BME_280::interval()
     in.altitude = _bme->readAltitude(SEA_LEVEL_PRESSURE_HPA);
     // Feet = 3.28 * altitudeMeters;
 
-    setSense(config["AIR_TEMPERATURE"], in.temperature);
-    setSense(config["AIR_HUMIDITY"], in.humidity);
-    setSense(config["AIR_TEMPERATURE_FEEL"], in.temperature_feel);
-    setSense(config["AIR_PRESSURE"], in.pressure);
-    setSense(config["AIR_ALTITUDE"], in.altitude);
+    setSense("AIR_TEMPERATURE", in.temperature);
+    setSense("AIR_HUMIDITY", in.humidity);
+    setSense("AIR_TEMPERATURE_FEEL", in.temperature_feel);
+    setSense("AIR_PRESSURE", in.pressure);
+    setSense("AIR_ALTITUDE", in.altitude);
 } // BME_280::interval
 
 // boolean isFahrenheit: True == Fahrenheit; False == Celcius

@@ -7,7 +7,7 @@ RGB_LED::RGB_LED(int red, int green, int blue)
     pin.blue  = blue;
 
     // listen = "air aqi range";
-    listen = config["AIR_AQI_RANGE"]; 
+    listen = "AIR_AQI_RANGE"; 
     // Turn it on
     pinMode(pin.red, OUTPUT);
     pinMode(pin.green, OUTPUT);

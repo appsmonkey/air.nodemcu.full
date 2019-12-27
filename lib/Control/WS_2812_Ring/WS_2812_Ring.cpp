@@ -3,20 +3,22 @@
 WS_2812_Ring::WS_2812_Ring(int pin, int count) : ring(count, pin)
 {
     control("led ring - 6 levels");
-    // listen = "air aqi range";
-    listen = config["AIR_AQI_RANGE"];
-    addToLoop(this);
+    
+    listen = "AIR_AQI_RANGE";    
 
+    addToLoop(this);
+    addToSetup(this);
+    
+};
+
+void WS_2812_Ring::setup(){    
     ring.begin();
     ring.setBrightness(255);
     ring.Interval = 100;
     // Loop rainbow until first reading
     ring.RainbowCycle(0);
-    for (int i = 0; i < 1000; i++) {
-        ring.RainbowCycleUpdate();
-        delay(300);
-    }
-};
+    ring.RainbowCycleUpdate();   
+}
 
 void WS_2812_Ring::loop()
 {
@@ -30,7 +32,7 @@ void WS_2812_Ring::loop()
     lastUpdate = millis();
 
     static int last_range     = -1;
-    static uint32_t old_color = ring.Color(255, 255, 255);
+    static uint32_t old_color = ring.Color(255,255,255);
 
     if (!listen.length()) {
         if (debug) {

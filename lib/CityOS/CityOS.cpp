@@ -1,41 +1,28 @@
 #include <CityOS.h>
 
-std::vector<String> CityOS::senses;
+std::vector<String> CityOS::senses;//vector with sense values e.g. ["s1","s2"....]
 std::vector<String> CityOS::controls;
 
-std::map<String, _SENSEVALUE> CityOS::senseValues;
+std::map<String, SenseValue> CityOS::senseValues;//map with sensevalues e.g. {"s1":(oldValue, newValue), "s2":(oldValue, newValue)...}
 std::map<String, double> CityOS::controlValues;
 
 std::vector<CityOS *> CityOS::loops;
 std::vector<CityOS *> CityOS::intervals;
+std::vector<CityOS *> CityOS::setups;
 
-std::map<String, String> CityOS::config;
 
 CityOS::CityOS():
 ntpClient(wifiUDP, "pool.ntp.org")
 {
     // Print errors to Serial
     debug.errors = true;
- 
+    
     sensing.active   = true;
     sensing.interval = 60;
+    sensing.heartbeatInterval = HEARTBEAT_INTERVAL;
 
-    // make api.interval 30+ sec for production - do not go much lower here
-    // each client.connect() eats 184 bytes at a time
-    // and returns it in few minutes as they timeout
-
-
-    if(loadConfig()){
-        _awsMqttClient = new AwsMqttClient(config["mqtt_host"], config["mqtt_port"].toInt(), config["thing"],
-                                           config["amazon_ca"], config["device_ca"], config["root_ca"],
-                                           config["private_key"]);
-        device.thing = config["thing"];
-        device.location = config["location"]                ;                    
-    } else{
-        _awsMqttClient = nullptr;
-        if(debug.config)
-                    Serial << F("Failed to load config.") << endl;
-    }
+    timeStamp = 0;
+    nextHourSendTime = 0;
    
 }
 
@@ -43,25 +30,58 @@ void CityOS::setup()
 {
     // Start Serials
     Serial.begin(115200); // serial terminal
+    delay(500);
+
+    Config config;
+    if(config.loadConfig())
+    {
+        _awsMqttClient = new AwsMqttClient(config.awsConfig.mqttHost, config.awsConfig.mqttPort.toInt(), config.awsConfig.thing,
+                                           config.awsConfig.amazonCa, config.awsConfig.deviceCa, config.awsConfig.rootCa,
+                                           config.awsConfig.privateKey);
+        device.thing = config.awsConfig.thing;
+        device.location = config.awsConfig.location;                    
+    } else{
+        _awsMqttClient = nullptr;
+        if(debug.config)
+                    Serial << F("Failed to load config.") << endl;
+    }    
     
+    for (auto const& i:setups) {
+        i->setup();
+        yield();
+    }
+    //load config values for senses
+    for (auto const& sense : senses) {
+        if (sense){
+            senseValues[sense].min = config.sensesConfig[sense].min;
+            senseValues[sense].max  = config.sensesConfig[sense].max;
+            senseValues[sense].shadowKey = config.sensesConfig[sense].shadowKey;
+            senseValues[sense].threshold  = config.sensesConfig[sense].threshold;         
+        }
+    }
+
     connectToWiFi(true);
 
-    //if connected to wifi setup time, and aws
+    //if connected to wifi, setup time and aws connection
     if (WiFi.status() == WL_CONNECTED){
         //set up time      
         ntpConnect();
+        //set up aws
         if (_awsMqttClient !=nullptr)
         {
             _awsMqttClient -> setupAwsJitp(ntpClient);
             _awsMqttClient -> connect();
         }               
-    }
-       
-
+    }    
+    delay(500);
     if (debug.wifi )
         printWifiStatus();
+        
+    Serial << "ID: " << getMacHEX() << endl;
+    Serial << "THING: " << device.thing << endl;
 
-   
+    printSchema();
+    
     
 } // CityOS::setup
 
@@ -75,32 +95,26 @@ void CityOS::loop()
     static unsigned long OledTimer = millis();
     static bool first = true;
 
-    if (first)
+    if (first){
         setup();
-    //reconect to wifi    
-    if (WiFi.status() != WL_CONNECTED)
-    {
-        if (debug.errors || debug.wifi)
-        {
-           Serial
-                << "wifi ssid: " << WiFi.SSID() << " NOT connected." << endl;
-        }
-        
-        connectToWiFi(false);
-    }
-    //aws reconnect
-    if (_awsMqttClient != nullptr && !_awsMqttClient ->isConnected() && WiFi.status() == WL_CONNECTED)
-    {
-        _awsMqttClient -> connect();
-    }
+    }    
+    //if connection to wifi or aws is lost reconnect
+    wifiAndAwsReconnect();
     
     if (sensing.active &&
       (first || millis() - OledTimer > (unsigned long)(sensing.interval * 1000)))
     {
         // update right away - no wait on first time
         first     = false;
+
         OledTimer = millis();
+
         interval();
+        if (sensing.active)
+        {
+            publishData();
+        }        
+        
     }
 
     for (auto const& l:loops) {
@@ -112,9 +126,14 @@ void CityOS::loop()
     if (_awsMqttClient != nullptr && _awsMqttClient ->isConnected())
     {
         _awsMqttClient -> loop(5000);  
-    }   
+    }  
+    if (debug.memory)
+    {
+        printHeapSize(); 
+    }
+    
+    
 } // CityOS::loop
-
 
 void CityOS::interval()
 {
@@ -123,24 +142,9 @@ void CityOS::interval()
         yield();
     }
 
-    printSenses();      
-    
-    if (WiFi.status() == WL_CONNECTED && _awsMqttClient != nullptr && _awsMqttClient -> isConnected())
-    {        
-        _awsMqttClient -> publish(getTopic(), getSchema(), [&](const char* topic, const char* msg) {
-                handleMessages(topic, msg);                
-        });
-        
-    }  else
-    {
-        if (debug.errors || debug.wifi)
-        {
-            Serial << "Could not publish data!" << endl;
-        }
-        
-    }
-    
-    timeStamp=ntpClient.getEpochTime();
+    if (debug.senses)
+        printSenses();   
+
     // memory leaks check
     if (debug.memory)
         printHeapSize();
@@ -151,16 +155,25 @@ String CityOS::getAllData(){
     //add senses
     for (auto const& sense : senses) {
         if (sense){
-            double value = senseValues[sense].value;
-            int si       = ceil(value);
-            if (value == si) 
+            if (senseValues[sense].isValid())
             {
-                jsonBuffer[sense] = si;                
-            }
-            else 
-            {
-                jsonBuffer[sense] = value;
-            }
+                double value = senseValues[sense].value;            
+                String key = senseValues[sense].shadowKey;   
+                // String key = config[sense];   
+
+                int si       = ceil(value);
+                
+                if (value == si) 
+                {
+                    jsonBuffer[key] = si;                
+                }
+                else 
+                {                
+                    jsonBuffer[key] = value;
+                }
+                senseValues[sense].oldValue = senseValues[sense].value;
+            }          
+
         }
     }
 
@@ -172,32 +185,77 @@ String CityOS::getAllData(){
 }
 
 String CityOS::getChangedData(){
-    double epsilon = 0.001;
+    
     DynamicJsonDocument jsonBuffer(512);
     //add senses
     for (auto const& sense : senses) {
-        if (sense){  
-            if (std::abs(senseValues[sense].value-senseValues[sense].oldValue) > epsilon){
-                jsonBuffer[sense] = senseValues[sense].value;
+        if (sense){
+                if (senseValues[sense].isValid() && senseValues[sense].isOverThreshold()){
+                // String key = config[sense];
+                String key = senseValues[sense].shadowKey;
+                
+                jsonBuffer[key] = senseValues[sense].value;    
+                senseValues[sense].oldValue = senseValues[sense].value;            
             }
-        }
+        }        
+    }  
+    
+    if (!jsonBuffer.isNull())
+    {
+        String result;
+
+        result.reserve(512);
+        serializeJson(jsonBuffer, result);
+
+        return result;
+    }else
+    {
+        return "";
     }
-
-    String result;
-    result.reserve(512);
-    serializeJson(jsonBuffer, result);
-
-    return result;
+    
 }
 
-String CityOS::getSchema(){
-    //first time or interval is bigger then sensing interval
-    unsigned long oldTimeStamp = timeStamp;
-    if (timeStamp == 0 || (timeStamp - oldTimeStamp)>= (unsigned long)(sensing.interval + 10)) {
+String CityOS::getData(){
+    //first time or in hourly interval
+    if (timeStamp == 0 || timeStamp >= nextHourSendTime )
+    {
+        timeStamp = ntpClient.getEpochTime();//change timestamp to new value
+        nextHourSendTime = timeStamp + sensing.heartbeatInterval; // set up time for new hourly data sending
+
         return getAllData();
-    }else{
+    }
+    else
+    {
+        timeStamp = ntpClient.getEpochTime();
+
         return getChangedData();
     }
+    
+}
+
+void CityOS::publishData(){
+
+    if (WiFi.status() == WL_CONNECTED && _awsMqttClient != nullptr && _awsMqttClient -> isConnected())
+    {  
+        String data = getData();
+        // if data was changed send it
+        if(data != ""){
+            _awsMqttClient -> publish(getTopic(), data, [&](const char* topic, const char* msg) {
+                    handleMessages(topic, msg);                
+            });
+        } else{
+            Serial << "Data was not changed over threshold. Nothing to send.";
+        }              
+    } 
+    else
+    {
+        if (debug.errors || debug.wifi)
+        {
+            Serial << "Could not publish data!" << endl;
+        }        
+    }
+
+
 }
 
 void CityOS::handleMessages(const char* topic, const char* msg){
@@ -212,8 +270,9 @@ void CityOS::printSenses()
     Serial << endl << F("SENSES | Data points: ") << endl;
     Serial << F(" - -  - -  - -  - -  ") << endl;
     int count = 1;
-    for (auto const& sense : senses) {
-        Serial << count << ". " << sense << ": ";
+    for (auto const& sense : senses) {        
+
+        Serial << count << ". " << sense<< " (" << senseValues[sense].shadowKey << ") : " ; 
 
         double value = senseValues[sense].value;
         int si       = ceil(value);
@@ -227,7 +286,22 @@ void CityOS::printSenses()
     }
     Serial << " - -  - -  - -  - -  " << endl;
 }
-
+void CityOS::printSchema(){
+    if (debug.senses)
+    {
+        int count = 1;
+        if (senses.size() > 0)
+        {
+            Serial << "SENSE | Data points set: " << endl;
+            Serial << F(" - -  - -  - -  - -  ") << endl;
+            for (auto const& sense : senses) {
+                Serial << "SENSE | " << count << ". " << sense << endl;
+                count++;
+            }
+        } 
+        Serial << F(" - -  - -  - -  - -  ") << endl;  
+    }
+}
 
 void CityOS::printControls()
 {
@@ -247,9 +321,8 @@ void CityOS::printControls()
         Serial << endl;
         count++;
     }
-    Serial << " - -  - -  - -  - -  " << endl;
+    Serial << F(" - -  - -  - -  - -  ") << endl;
 }
-
 
 // Mem leaks check
 void CityOS::printHeapSize()
@@ -277,9 +350,10 @@ void CityOS::connectToWiFi(bool useWiFiManager){
     if (useWiFiManager)
     {
         WiFiManager wifiManager;
-    
+        // wifiManager.resetSettings();
+        wifiManager.setMinimumSignalQuality(10);
         wifiManager.setConfigPortalTimeout(CONFIG_PORTAL_TIMEOUT); // sets timeout until configuration portal gets turned off
-        wifiManager.setConnectTimeout(CONFIG_PORTAL_TIMEOUT); // how long to try to connect for before continuing
+        wifiManager.setConnectTimeout(ESP_CONNECT_TIMEOUT); // how long to try to connect for before continuing
         wifiManager.setCaptivePortalEnable(false);
         if (debug.wifi) wifiManager.setDebugOutput(true);
 
@@ -290,6 +364,9 @@ void CityOS::connectToWiFi(bool useWiFiManager){
     {
         WiFi.begin();
         // WiFi.begin(WiFi.SSID(), WiFi.psk()); 
+        if (debug.wifi){
+            Serial << "SSID="<<WiFi.SSID()<<" psk="<<WiFi.psk();
+        }
         int wifi_retry_count = 1;
         int retry_on         = 1000;
         int retry_for        = 10;
@@ -308,6 +385,7 @@ void CityOS::connectToWiFi(bool useWiFiManager){
                     << (wifi_retry_count * retry_on) / 1000 << " seconds." << endl;
             }
             wifi_retry_count++;
+            
         }
     }
     
@@ -318,6 +396,25 @@ void CityOS::connectToWiFi(bool useWiFiManager){
             Serial << "giving up on connection for now." << endl;
     }    
 }
+
+void CityOS::wifiAndAwsReconnect(){
+     //reconect to wifi    
+    if (WiFi.status() != WL_CONNECTED)
+    {
+        if (debug.errors || debug.wifi)
+        {
+           Serial
+                << "wifi ssid: " << WiFi.SSID() << " NOT connected." << endl;
+        }        
+        connectToWiFi(false);
+    }
+    //aws reconnect
+    if (_awsMqttClient != nullptr && !_awsMqttClient ->isConnected() && WiFi.status() == WL_CONNECTED)
+    {
+        _awsMqttClient -> connect();
+    }   
+}
+
 // Debug Info Function
 void CityOS::printWifiStatus()
 {
@@ -377,18 +474,19 @@ double CityOS::setSense(String sense, long value)
 
 double CityOS::setSense(String sense, double value)
 {
-    std::map<String, _SENSEVALUE>::iterator it;
+    std::map<String, SenseValue>::iterator it;
 
     // if value on this case was never set return 0
-    double oldValue = 0.00;
-
+    double oldValue = 0.00;    
+    
     // check for exiting data
     it = senseValues.find(sense);
     if (it != senseValues.end())
         oldValue = senseValues[sense].value;
     
-    senseValues[sense].oldValue = oldValue;
-    senseValues[sense].value = value;
+    // round value to 2 decimal places
+    double v = (int)(value * 100 + .5);
+    senseValues[sense].value = (double) v / 100;
     
     return oldValue;
 }
@@ -424,46 +522,9 @@ void CityOS::addToInterval(CityOS * i)
     intervals.push_back(i);
 }
 
-bool CityOS::loadConfig(){
-    if(SPIFFS.begin()){
-        if(debug.config)
-            Serial << F("SPIFFS mounted file system --- Loading config") << endl;
-        if(SPIFFS.exists(F("/config.json"))){
-            File configFile=SPIFFS.open(F("/config.json"), "r");
-            if(configFile){
-                size_t size=configFile.size();
-
-                std::unique_ptr<char[]> buf(new char[size]);
-
-                configFile.readBytes(buf.get(), size);
-
-                DynamicJsonDocument json(JSON_CAPACITY);
-                auto error=deserializeJson(json, buf.get());                
-                if (!error) {
-                    
-                    JsonObject obj = json.as<JsonObject>();
-                    for (JsonPair p : obj) {
-                         String key(p.key().c_str());                        
-                        config[key]=p.value().as<String>();
-                    }             
-                }else
-                {
-                    if(debug.config)
-                        Serial << F("Failed to load json config.") << endl;
-                    return false;  
-                } 
-            }
-        } else{
-            if(debug.config)
-                Serial << F("Failed to load config.json.") << endl;
-            return false;    
-        }   
-    }else{
-        if(debug.config)
-            Serial << F("Failed to mount file system.") << endl;
-        return false;
-    }
-    return true;
+void CityOS::addToSetup(CityOS * i)
+{
+    setups.push_back(i);
 }
 
 String CityOS::getTopic(){

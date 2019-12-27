@@ -9,33 +9,42 @@
 # include "WConstants.h"
 #endif
 
-// #include "Config.ctos.h"
 #include <ESP8266WiFi.h>
 #include <map>
 #include <vector>
 #include <string>
 #include "Utils.h"
 #include <AwsMqttClient.h>
+#include <Config.h>
+#include <Constants.h>
 #include <ArduinoJson.h>
 #include <WiFiManager.h> 
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 
-//capacity of DynamicJsonDocument generated on 
-//https://arduinojson.org/v5/assistant/ for 
-//config.json
-static const size_t JSON_CAPACITY= JSON_OBJECT_SIZE(28) + 590;
-
-#define CONFIG_PORTAL_TIMEOUT 60            //value for config portal timeout
 
 /**
  * Struct to hold old and current value for senses
  */
-struct _SENSEVALUE {
-    double oldValue = 0;
-    double value =0;
-    bool operator<(const _SENSEVALUE& s) const{
+struct SenseValue {
+    double oldValue = 0.00;
+    double value = 0.00;
+
+    double min = std::numeric_limits<double>::min();
+    double max = std::numeric_limits<double>::max();
+
+    double threshold = DEFAULT_THRESHOLD;
+    String shadowKey = "";
+
+    bool operator<(const SenseValue& s) const{
         return (this->value < s.value);
+    }
+
+    bool isValid(){
+        return ((this->value>=min)&&(this->value<=max));
+    }
+    bool isOverThreshold(){
+        return(std::abs(this->value-this->oldValue) >= threshold);
     }
 };
 
@@ -58,18 +67,18 @@ public:
     } debug;
 
     struct _SENSING {
-        bool active = false;
-        int  interval;
+        bool active = true;
+        int  interval; //time interval to check sensor readings
+        int  heartbeatInterval; 
     } sensing;
 
-    struct _DEVICE
-    {
+    struct _DEVICE{
         String thing;
         String location;
     } device;   
 
     // Arduino loop() func every time
-    void setup();
+    virtual void setup();
     virtual void loop();
 
     // loop() on interval timing
@@ -84,22 +93,19 @@ public:
     static double setControl(String control, double value);
 
     void rest(String method, String url, String json);
-    //loads config from SPIFFS
-    bool loadConfig();
+
 protected:
 
     static std::vector<CityOS *> loops;
     static std::vector<CityOS *> intervals;
+    static std::vector<CityOS *> setups;
 
     static std::vector<String> senses;
     static std::vector<String> controls;
 
-    static std::map<String, _SENSEVALUE> senseValues;
+    static std::map<String, SenseValue> senseValues;
     static std::map<String, double> controlValues;
 
-    static std::map<String, double> old_senseValues;
-    //map to hold config value from SPIFFS config.json
-    static std::map<String, String> config;
 
     // Debug Info function
     String getMacHEX();
@@ -112,13 +118,17 @@ protected:
 
     virtual void addToLoop(CityOS *);
     virtual void addToInterval(CityOS *);
+    virtual void addToSetup(CityOS *);
 
-    //Returns schema
-    String getSchema();    
+    //Returns data
+    String getData();    
     //Returns only changed data
     String getChangedData();
     //Returns data from all senses
     String getAllData();
+
+    void publishData();
+    void wifiAndAwsReconnect();
 
     void requestControls();
     void handleControls();
@@ -135,6 +145,7 @@ protected:
     WiFiUDP wifiUDP;
 
     unsigned long timeStamp;
+    unsigned long nextHourSendTime;
 
     void serveHTML();
     const char * HTMLHead();
@@ -144,6 +155,7 @@ protected:
     void printWifiStatus();
     void printHeapSize();
     void printSenses();
+    void printSchema();
     void printControls();  
 
     //conncects Boxy to WIFI

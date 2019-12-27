@@ -17,14 +17,7 @@
 #include <NTPClient.h>
 #include <functional>
 #include "Utils.h"
-
-//capacity of DynamicJsonDocument generated on 
-//https://arduinojson.org/v5/assistant/ for 
-//aws-config.json
-// static const size_t JSON_CAPACITY= JSON_OBJECT_SIZE(7) + 220;
-
-#define emptyString String()
-#define AWS_IOT_MQTT_NUM_SUBSCRIBE_HANDLERS 5           // number of callbeck handlers fro incoming aws mqtt messages
+#include <Constants.h>
 
 typedef std::function<void (const char*, const char*)> SubscriptionCallback;            //callback method signature
 

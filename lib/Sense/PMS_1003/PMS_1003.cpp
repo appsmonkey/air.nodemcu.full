@@ -3,65 +3,91 @@
 
 PMS_1003::PMS_1003(int rx, int tx)
 {
+    
     pin.rx = rx;
     pin.tx = tx;
-    _swSer = new SoftwareSerial(pin.rx, pin.tx);
-    sense(config["AIR_PM_1"]);
-    sense(config["AIR_PM_2P5"]);
-    sense(config["AIR_PM_10"]);
 
-    sense(config["AIR_AQI_RANGE"]);
-    sense(config["AIR_PM_2P5_RANGE"]);
-    sense(config["AIR_PM_10_RANGE"]);
+    _swSer = new SoftwareSerial(pin.rx, pin.tx);
+    
+    sense("AIR_PM1");
+    sense("AIR_PM2P5");
+    sense("AIR_PM10");
+
+    sense("AIR_AQI_RANGE");
+    sense("AIR_PM2P5_RANGE");
+    sense("AIR_PM10_RANGE");
 
     addToInterval(this);
+    addToSetup(this);
 }
 
-void PMS_1003::interval()
-{    
-    _swSer->begin(9600); // PM Serial
-    // set the Timeout to 1500ms
-    // longer than the data transmission periodic time of the sensor
-    // which is 1000ms
-    _swSer->setTimeout(1500);
+PMS_1003::~PMS_1003()
+{
+    delete _swSer;
+}
 
-    while (_swSer->available()) {
-        _swSer->read();           // empty the RX buffer
-    }
-    _swSer->flush();
+void PMS_1003::setup(){
     
-    uint16_t wait_ms; // time spent waiting for new sample
-    uint32_t start_ms = millis();   // start waiting time
-    do {                            // ~650ms to complete a measurements
-        delay(10);                    // wait up to max_wait_ms
-        wait_ms = millis()-start_ms;  // time waited so far
-    } while (!_swSer->available() && wait_ms<max_wait_ms);
+   //set up and read pm before wifi 
+    _swSer->setTimeout(2000);
 
-
-    // start to read when detect 0x42 (PM)
-    if (!_swSer->find(0x42)) {
-        if (debug.errors) Serial
-                << "ERROR: PM Sensor not functional" << endl;
-                
-        return;
-    }
+    _swSer->begin(9600); // PM Serial
 
     unsigned int LENG = 31;
     unsigned char buf[LENG]; // 0x42 + 31 bytes equal to 32 bytes
 
-    _swSer->readBytes(buf, LENG);
+    bool found = readPM(buf, LENG);
     
+    if (!found) {
+        if (debug.errors) Serial
+                << "ERROR: PM Sensor not functional" << endl;       
+    }
+
+}
+
+void PMS_1003::interval()
+{     
+    
+    unsigned int LENG = 31;
+    unsigned char buf[LENG]; // 0x42 + 31 bytes equal to 32 bytes
+   
+   bool found = readPM(buf, LENG);
+
+    
+    if (!found) {
+        if (debug.errors) Serial
+                << "ERROR: PM Sensor not functional" << endl;               
+        return;
+    }
 
     if (buf[0] == 0x4d) {
         if (checkValue(buf, LENG)) {
-            setSense(config["AIR_PM_1"], read16Bits(buf, 3));
-            setSense(config["AIR_PM_2P5"], read16Bits(buf, 5));
-            setSense(config["AIR_PM_10"], read16Bits(buf, 7));
-
+            setSense("AIR_PM1", read16Bits(buf, 3));
+            setSense("AIR_PM2P5", read16Bits(buf, 5));
+            setSense("AIR_PM10", read16Bits(buf, 7));
+            
             setWorstRange();
         }
-    }
+    }   
+    
+    
 } // PMS_1003::loop
+
+bool PMS_1003::readPM(unsigned char *buf, unsigned int length){
+
+    uint32_t start_ms = millis();   // start waiting time
+     while((millis() - start_ms) < 3000){
+        if(_swSer->available()>0){
+            // start to read when detect 0x42 (PM)
+           if (_swSer->find(0x42)){
+               _swSer->readBytes(buf, length);
+               return true;
+            }     
+        }
+        yield();
+    }
+    return false;
+}
 
 char PMS_1003::checkValue(unsigned char * thebuf, char leng)
 {
@@ -99,28 +125,30 @@ void PMS_1003::setPM2_5Range()
     // int ranges[5] = { 30, 60, 90, 120, 250 };
 
     for (int i = 0; i < (int)(sizeof(ranges) / sizeof(int)); i++)
-        if (senseValues[config["AIR_PM_2P5"]].value < ranges[i]) {
-            setSense(config["AIR_PM_2P5_RANGE"], i);
+        if (senseValues["AIR_PM2P5"].value < ranges[i]) {
+            setSense("AIR_PM2P5_RANGE", i);
             return;
         }
-    setSense(config["AIR_PM_2P5_RANGE"], (int) (sizeof(ranges) / sizeof(int)));
+    setSense("AIR_PM2P5_RANGE", (int) (sizeof(ranges) / sizeof(int)));
 }
 
 void PMS_1003::setPM10Range()
 {
     // USA
     int ranges[5] = { 55, 155, 255, 355, 425 };
-
+    
     // Asia
     // int ranges[5] = { 50, 100, 250, 350, 430 };
 
     for (int i = 0; i < (int)(sizeof(ranges) / sizeof(int)); i++)
-        if (senseValues[config["AIR_PM_10"]].value < ranges[i]) {
-            setSense(config["AIR_PM_10_RANGE"], i);
+        if (senseValues["AIR_PM10"].value < ranges[i]) {
+            
+            setSense("AIR_PM10_RANGE", i);
+            
             return;
         }
-
-    setSense(config["AIR_PM_10_RANGE"], (int) (sizeof(ranges) / sizeof(int)));
+    
+    setSense("AIR_PM10_RANGE", (int) (sizeof(ranges) / sizeof(int)));
 }
 
 void PMS_1003::setWorstRange()
@@ -128,12 +156,12 @@ void PMS_1003::setWorstRange()
     setPM2_5Range();
     setPM10Range();
 
-    int r2_5 = senseValues[config["AIR_PM_2P5_RANGE"]].value;
-    int r10  = senseValues[config["AIR_PM_10_RANGE"]].value;
+    int r2_5 = senseValues["AIR_PM2P5_RANGE"].value;
+    int r10  = senseValues["AIR_PM10_RANGE"].value;
 
     int range = r2_5 > r10 ? r2_5 : r10;
 
-    setSense(config["AIR_AQI_RANGE"], range);
+    setSense("AIR_AQI_RANGE", range);
 
     /*
      * {

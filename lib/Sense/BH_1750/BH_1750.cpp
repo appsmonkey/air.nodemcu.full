@@ -15,7 +15,7 @@ BH_1750::BH_1750(int scl, int sda)
     _lightMeter->begin();
     _lightMeter->configure(BH1750::ONE_TIME_HIGH_RES_MODE);
 
-    sense(config["LIGHT_LUX"]);
+    sense("LIGHT_INTENSITY");
 
     addToInterval(this);
 }
@@ -33,5 +33,5 @@ void BH_1750::interval()
         delay(1000);
         lux = _lightMeter->readLightLevel();
     }
-    setSense(config["LIGHT_LUX"], lux);
+    setSense("LIGHT_INTENSITY", lux);
 }

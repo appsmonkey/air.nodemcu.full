@@ -17,6 +17,7 @@ public:
     int count;
 
     void loop();
+    void setup();
 
 private:
     NeoPatterns ring;
