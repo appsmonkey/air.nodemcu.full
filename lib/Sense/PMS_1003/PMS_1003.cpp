@@ -51,7 +51,7 @@ void PMS_1003::interval()
     unsigned int LENG = 31;
     unsigned char buf[LENG]; // 0x42 + 31 bytes equal to 32 bytes
    
-   bool found = readPM(buf, LENG);
+    bool found = readPM(buf, LENG);
 
     
     if (!found) {
@@ -62,9 +62,9 @@ void PMS_1003::interval()
 
     if (buf[0] == 0x4d) {
         if (checkValue(buf, LENG)) {
-            setSense("AIR_PM1", read16Bits(buf, 3));
-            setSense("AIR_PM2P5", read16Bits(buf, 5));
-            setSense("AIR_PM10", read16Bits(buf, 7));
+            setSense("AIR_PM1", read16Bits(buf, 9));
+            setSense("AIR_PM2P5", read16Bits(buf, 11));
+            setSense("AIR_PM10", read16Bits(buf, 13));
             
             setWorstRange();
         }

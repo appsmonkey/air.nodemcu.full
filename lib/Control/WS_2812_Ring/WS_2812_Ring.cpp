@@ -16,7 +16,7 @@ void WS_2812_Ring::setup(){
     ring.setBrightness(255);
     ring.Interval = 100;
     // Loop rainbow until first reading
-    ring.RainbowCycle(0);
+    ring.RainbowCycle(3);
     ring.RainbowCycleUpdate();   
 }
 
@@ -49,7 +49,19 @@ void WS_2812_Ring::loop()
     }
 
     int current_range = (int) senseValues[listen].value;
+    int wifi = (int)controlValues["wifi"];
+    if (wifi==0)
+    {
+        ring.Interval = 0;
+        ring.RainbowCycle(3, FORWARD);       
 
+        int start = millis();
+        while((millis()-start) < 5000){
+           yield();            
+           ring.Update(); 
+        }
+    }
+    
     if (last_range != current_range) {
         int colors[6][3] = {
             {    1, 200, 255 }, // blue

@@ -20,15 +20,19 @@ void BME_280::setup(int scl = D3, int sda = D4, int i2c = 0x76)
     _wire->begin(sda, scl);
     _bme->begin(i2c, _wire);
 
+    _bme->setSampling(Adafruit_BME280::MODE_FORCED,
+                      Adafruit_BME280::SAMPLING_X1, // temperature
+                      Adafruit_BME280::SAMPLING_X1, // pressure
+                      Adafruit_BME280::SAMPLING_X1, // humidity
+                      Adafruit_BME280::FILTER_OFF   );
+
     in.temperature      = 0;
     in.humidity         = 0;
     in.temperature_feel = 0;
     in.pressure         = 0;
     in.altitude         = 0;
 
-    sense("AIR_TEMPERATURE");
-    sense("AIR_HUMIDITY");
-    sense("AIR_TEMPERATURE_FEEL");
+    sense("DEVICE_TEMPERATURE");
     sense("AIR_PRESSURE");
     sense("AIR_ALTITUDE");
 
@@ -42,6 +46,7 @@ BME_280::~BME_280()
 
 void BME_280::interval()
 {
+    _bme->takeForcedMeasurement();
     in.temperature = _bme->readTemperature();
     // float tempF = 9.0 / 5.0 * tempC + 32.0;
 
@@ -65,9 +70,7 @@ void BME_280::interval()
     in.altitude = _bme->readAltitude(SEA_LEVEL_PRESSURE_HPA);
     // Feet = 3.28 * altitudeMeters;
 
-    setSense("AIR_TEMPERATURE", in.temperature);
-    setSense("AIR_HUMIDITY", in.humidity);
-    setSense("AIR_TEMPERATURE_FEEL", in.temperature_feel);
+    setSense("DEVICE_TEMPERATURE", in.temperature);    
     setSense("AIR_PRESSURE", in.pressure);
     setSense("AIR_ALTITUDE", in.altitude);
 } // BME_280::interval

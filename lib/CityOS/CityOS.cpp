@@ -31,7 +31,7 @@ void CityOS::setup()
     // Start Serials
     Serial.begin(115200); // serial terminal
     delay(500);
-
+    control("wifi");
     Config config;
     if(config.loadConfig())
     {
@@ -110,6 +110,7 @@ void CityOS::loop()
         OledTimer = millis();
 
         interval();
+        
         if (sensing.active)
         {
             publishData();
@@ -388,6 +389,7 @@ void CityOS::connectToWiFi(bool useWiFiManager){
             
         }
     }
+        
     
     if (debug.wifi) {
         if (WiFi.status() == WL_CONNECTED)
@@ -413,6 +415,15 @@ void CityOS::wifiAndAwsReconnect(){
     {
         _awsMqttClient -> connect();
     }   
+    if (WiFi.status() != WL_CONNECTED || _awsMqttClient == nullptr || !_awsMqttClient ->isConnected() )
+    {
+        setControl("wifi",0);
+    }
+    else
+    {
+        setControl("wifi",1);
+    }
+    
 }
 
 // Debug Info Function
