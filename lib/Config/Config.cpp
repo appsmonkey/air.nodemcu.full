@@ -100,6 +100,18 @@ void Config::loadAwsConfig(JsonObject aws){
     {
         awsConfig.location = aws["location"].as<String>();
     }   
+    if (aws.containsKey("heartbeat"))
+    {
+        awsConfig.heartbeat = aws["heartbeat"].as<int>()*60;//config values are in minutes, we need to convert it in seconds
+    }else{
+        awsConfig.heartbeat = 3600;
+    }
+    if (aws.containsKey("sense_interval"))
+    {
+        awsConfig.senseInterval = aws["sense_interval"].as<int>();
+    }else{
+        awsConfig.senseInterval = 60;
+    }
 }
 
 void Config::loadSensesConfig(JsonObject senses){

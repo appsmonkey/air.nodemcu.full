@@ -18,8 +18,6 @@ ntpClient(wifiUDP, "pool.ntp.org")
     debug.errors = true;
     
     sensing.active   = true;
-    sensing.interval = 60;
-    sensing.heartbeatInterval = HEARTBEAT_INTERVAL;
 
     timeStamp = 0;
     nextHourSendTime = 0;
@@ -31,17 +29,27 @@ void CityOS::setup()
     // Start Serials
     Serial.begin(115200); // serial terminal
     delay(500);
-    control("wifi");
+
+    control("wifi");// add wifi to control to be able to signal in ring if wifi is not connected 
+
     Config config;
+
     if(config.loadConfig())
     {
+        sensing.interval = config.awsConfig.senseInterval; //  interval to send senses (default is 60 seconds)
+
+        sensing.heartbeatInterval = config.awsConfig.heartbeat;// heartbeat interval to send all senses (default is 3600 seconds)
+
         _awsMqttClient = new AwsMqttClient(config.awsConfig.mqttHost, config.awsConfig.mqttPort.toInt(), config.awsConfig.thing,
                                            config.awsConfig.amazonCa, config.awsConfig.deviceCa, config.awsConfig.rootCa,
                                            config.awsConfig.privateKey);
+                                           
         device.thing = config.awsConfig.thing;
-        device.location = config.awsConfig.location;                    
+        device.location = config.awsConfig.location;    
+
     } else{
         _awsMqttClient = nullptr;
+
         if(debug.config)
                     Serial << F("Failed to load config.") << endl;
     }    

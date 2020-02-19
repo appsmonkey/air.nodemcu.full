@@ -5,8 +5,7 @@
 #define ESP_CONNECT_TIMEOUT 20
 #define DEFAULT_THRESHOLD 0.001
 #define emptyString String()
-#define AWS_IOT_MQTT_NUM_SUBSCRIBE_HANDLERS 5           // number of callback handlers fro incoming aws mqtt messages
+#define AWS_IOT_MQTT_NUM_SUBSCRIBE_HANDLERS 5           // number of callback handlers for incoming aws mqtt messages
 
-#define HEARTBEAT_INTERVAL 3600
 
 #endif 

@@ -41,6 +41,8 @@ public:
         String rootCa;
         String privateKey;
         String location;
+        int    heartbeat;
+        int    senseInterval;
     } awsConfig;
 
     std::map<String, SenseConfig> sensesConfig;
