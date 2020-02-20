@@ -50,10 +50,12 @@ void WS_2812_Ring::loop()
 
     int current_range = (int) senseValues[listen].value;
     int wifi = (int)controlValues["wifi"];
+
     if (wifi==0)
     {
         ring.Interval = 0;
-        ring.RainbowCycle(3, FORWARD);       
+        // ring.RainbowCycle(3, FORWARD);       
+        ring.Scanner(ring.Color(255,0,0), 55);
 
         int start = millis();
         while((millis()-start) < 5000){

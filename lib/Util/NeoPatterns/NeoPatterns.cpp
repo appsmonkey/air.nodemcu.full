@@ -138,10 +138,10 @@ void NeoPatterns::ScannerUpdate()
 {
     for (int i = 0; i < numPixels(); i++) {
         if (i == Index) { // first half of the scan
-            Serial.print(i);
+            
             setPixelColor(i, Color1);
         } else if (i == TotalSteps - Index) { // The return trip.
-            Serial.print(i);
+            
             setPixelColor(i, Color1);
         } else { // fade to black
             setPixelColor(i, DimColor(getPixelColor(i)));
