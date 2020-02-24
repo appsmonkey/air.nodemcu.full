@@ -38,7 +38,7 @@ void CityOS::setup()
     {
         sensing.interval = config.awsConfig.senseInterval; //  interval to send senses (default is 60 seconds)
 
-        sensing.heartbeatInterval = config.awsConfig.heartbeat;// heartbeat interval to send all senses (default is 3600 seconds)
+        sensing.heartbeat = config.awsConfig.heartbeat;// heartbeat interval to send all senses (default is 3600 seconds)
 
         _awsMqttClient = new AwsMqttClient(config.awsConfig.mqttHost, config.awsConfig.mqttPort.toInt(), config.awsConfig.thing,
                                            config.awsConfig.amazonCa, config.awsConfig.deviceCa, config.awsConfig.rootCa,
@@ -105,9 +105,11 @@ void CityOS::loop()
 
     if (first){
         setup();
+    }
+    else{        
+        wifiAndAwsReconnect();//if connection to wifi or aws is lost, try to reconnect
     }    
-    //if connection to wifi or aws is lost reconnect
-    wifiAndAwsReconnect();
+    
     
     if (sensing.active &&
       (first || millis() - OledTimer > (unsigned long)(sensing.interval * 1000)))
@@ -229,7 +231,7 @@ String CityOS::getData(){
     if (timeStamp == 0 || timeStamp >= nextHourSendTime )
     {
         timeStamp = ntpClient.getEpochTime();//change timestamp to new value
-        nextHourSendTime = timeStamp + sensing.heartbeatInterval; // set up time for new hourly data sending
+        nextHourSendTime = timeStamp + sensing.heartbeat; // set up time for new hourly data sending
 
         return getAllData();
     }
@@ -362,43 +364,52 @@ void CityOS::connectToWiFi(bool useWiFiManager){
         // wifiManager.resetSettings();
         wifiManager.setMinimumSignalQuality(10);
         wifiManager.setConfigPortalTimeout(CONFIG_PORTAL_TIMEOUT); // sets timeout until configuration portal gets turned off
-        wifiManager.setConnectTimeout(ESP_CONNECT_TIMEOUT); // how long to try to connect for before continuing
+        // wifiManager.setConnectTimeout(ESP_CONNECT_TIMEOUT); // how long to try to connect for before continuing
         wifiManager.setCaptivePortalEnable(false);
+
         if (debug.wifi) wifiManager.setDebugOutput(true);
 
         wifiManager.startConfigPortal(device.thing.c_str());        
-    }  
+    } 
+    else 
+    {
+        if (WiFi.status() != WL_CONNECTED)
+        {
+            WiFi.begin();
+            // WiFi.begin(WiFi.SSID(), WiFi.psk()); 
+            if (debug.wifi){
+                Serial << "SSID="<<WiFi.SSID()<<" psk="<<WiFi.psk();
+            }
+            int wifi_retry_count = 1;
+            int retry_on         = 1000;
+            int retry_for        = 10;
+            while (wifi_retry_count < retry_for && WiFi.status() != WL_CONNECTED) {
+                yield();
+                delay(retry_on);
+                if (debug.wifi)
+                    Serial << ".";
 
+                // Make sure you notify if WIFI is not connecting
+                // notify every 20 attempts
+                if (debug.errors && (wifi_retry_count % 20 == 0 )) {
+                    Serial
+                        << "wifi ssid: " << WiFi.SSID() << " still NOT connected." << endl
+                        << "Retring for: "
+                        << (wifi_retry_count * retry_on) / 1000 << " seconds." << endl;
+                }
+                wifi_retry_count++;
+                
+            }
+        }
+    }        
     if (WiFi.status() != WL_CONNECTED)
     {
-        WiFi.begin();
-        // WiFi.begin(WiFi.SSID(), WiFi.psk()); 
-        if (debug.wifi){
-            Serial << "SSID="<<WiFi.SSID()<<" psk="<<WiFi.psk();
-        }
-        int wifi_retry_count = 1;
-        int retry_on         = 1000;
-        int retry_for        = 10;
-        while (wifi_retry_count < retry_for && WiFi.status() != WL_CONNECTED) {
-            yield();
-            delay(retry_on);
-            if (debug.wifi)
-                Serial << ".";
-
-            // Make sure you notify if WIFI is not connecting
-            // notify every 20 attempts
-            if (debug.errors && (wifi_retry_count % 20 == 0 )) {
-                Serial
-                    << "wifi ssid: " << WiFi.SSID() << " still NOT connected." << endl
-                    << "Retring for: "
-                    << (wifi_retry_count * retry_on) / 1000 << " seconds." << endl;
-            }
-            wifi_retry_count++;
-            
-        }
+        setControl("wifi",0);
     }
-        
-    
+    else
+    {
+        setControl("wifi",1);
+    }
     if (debug.wifi) {
         if (WiFi.status() == WL_CONNECTED)
             Serial << "connected." << endl;
@@ -443,9 +454,7 @@ void CityOS::printWifiStatus()
     Serial << "Gateway: " << WiFi.gatewayIP() << endl;
 
     Serial << "Connected to SSID: " << WiFi.SSID() << endl;
-    Serial << "Wifi signal strength (RSSI):" << WiFi.RSSI() << " dBm" << endl;
-
-    
+    Serial << "Wifi signal strength (RSSI):" << WiFi.RSSI() << " dBm" << endl;    
 }
 
 // Debug Info function

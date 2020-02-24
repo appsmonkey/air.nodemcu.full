@@ -69,7 +69,7 @@ public:
     struct _SENSING {
         bool active = true;
         int  interval; //time interval to check sensor readings
-        int  heartbeatInterval; 
+        int  heartbeat; 
     } sensing;
 
     struct _DEVICE{

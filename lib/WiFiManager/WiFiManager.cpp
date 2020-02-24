@@ -634,6 +634,11 @@ uint8_t WiFiManager::processConfigPortal(){
           shutdownConfigPortal();
           return WL_CONNECTED; // CONNECT SUCCESS
         }
+        else{//zarko.runjevac 24.2.2020 if connection to wifi fails, shutdown config portal
+          DEBUG_WM(DEBUG_ERROR,F("[ERROR] Connect to new AP Failed"));
+          shutdownConfigPortal();
+          return WL_CONNECT_FAILED; // CONNECT FAIL
+        }
         DEBUG_WM(DEBUG_ERROR,F("[ERROR] Connect to new AP Failed"));
       }
  
