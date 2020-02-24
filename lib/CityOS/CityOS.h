@@ -34,6 +34,7 @@ struct SenseValue {
     double max = std::numeric_limits<double>::max();
 
     double threshold = DEFAULT_THRESHOLD;
+
     String shadowKey = "";
 
     bool operator<(const SenseValue& s) const{
@@ -145,7 +146,7 @@ protected:
     WiFiUDP wifiUDP;
 
     unsigned long timeStamp;
-    unsigned long nextHourSendTime;
+    unsigned long heartbeatSendTime;
 
     void serveHTML();
     const char * HTMLHead();
@@ -158,7 +159,7 @@ protected:
     void printSchema();
     void printControls();  
 
-    //conncects Boxy to WIFI
+    //connects Boxy to WIFI
     void connectToWiFi(bool useWiFiManager);   
 
 };

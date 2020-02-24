@@ -20,7 +20,7 @@ ntpClient(wifiUDP, "pool.ntp.org")
     sensing.active   = true;
 
     timeStamp = 0;
-    nextHourSendTime = 0;
+    heartbeatSendTime = 0;
    
 }
 
@@ -228,10 +228,10 @@ String CityOS::getChangedData(){
 
 String CityOS::getData(){
     //first time or in hourly interval
-    if (timeStamp == 0 || timeStamp >= nextHourSendTime )
+    if (timeStamp == 0 || timeStamp >= heartbeatSendTime )
     {
         timeStamp = ntpClient.getEpochTime();//change timestamp to new value
-        nextHourSendTime = timeStamp + sensing.heartbeat; // set up time for new hourly data sending
+        heartbeatSendTime = timeStamp + sensing.heartbeat; // set up time for new hourly data sending
 
         return getAllData();
     }

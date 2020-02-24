@@ -34,7 +34,6 @@ void BME_280::setup(int scl = D3, int sda = D4, int i2c = 0x76)
 
     sense("DEVICE_TEMPERATURE");
     sense("AIR_PRESSURE");
-    sense("AIR_ALTITUDE");
 
     addToInterval(this);
 }
@@ -72,7 +71,6 @@ void BME_280::interval()
 
     setSense("DEVICE_TEMPERATURE", in.temperature);    
     setSense("AIR_PRESSURE", in.pressure);
-    setSense("AIR_ALTITUDE", in.altitude);
 } // BME_280::interval
 
 // boolean isFahrenheit: True == Fahrenheit; False == Celcius
