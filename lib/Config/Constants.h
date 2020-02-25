@@ -7,5 +7,4 @@
 #define emptyString String()
 #define AWS_IOT_MQTT_NUM_SUBSCRIBE_HANDLERS 5           // number of callback handlers for incoming aws mqtt messages
 
-
 #endif 

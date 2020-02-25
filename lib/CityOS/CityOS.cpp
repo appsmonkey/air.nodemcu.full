@@ -134,7 +134,7 @@ void CityOS::loop()
     }
 
     // mqtt loop to called regularly to allow the client to process incoming messages and maintain its connection to the server.
-    if (_awsMqttClient != nullptr && _awsMqttClient ->isConnected())
+    if (WiFi.status() == WL_CONNECTED && _awsMqttClient != nullptr && _awsMqttClient ->isConnected())
     {
         _awsMqttClient -> loop(5000);  
     }  
@@ -370,38 +370,36 @@ void CityOS::connectToWiFi(bool useWiFiManager){
         if (debug.wifi) wifiManager.setDebugOutput(true);
 
         wifiManager.startConfigPortal(device.thing.c_str());        
-    } 
-    else 
+    }
+    if (WiFi.status() != WL_CONNECTED)
     {
-        if (WiFi.status() != WL_CONNECTED)
-        {
-            WiFi.begin();
-            // WiFi.begin(WiFi.SSID(), WiFi.psk()); 
-            if (debug.wifi){
-                Serial << "SSID="<<WiFi.SSID()<<" psk="<<WiFi.psk();
-            }
-            int wifi_retry_count = 1;
-            int retry_on         = 1000;
-            int retry_for        = 10;
-            while (wifi_retry_count < retry_for && WiFi.status() != WL_CONNECTED) {
-                yield();
-                delay(retry_on);
-                if (debug.wifi)
-                    Serial << ".";
-
-                // Make sure you notify if WIFI is not connecting
-                // notify every 20 attempts
-                if (debug.errors && (wifi_retry_count % 20 == 0 )) {
-                    Serial
-                        << "wifi ssid: " << WiFi.SSID() << " still NOT connected." << endl
-                        << "Retring for: "
-                        << (wifi_retry_count * retry_on) / 1000 << " seconds." << endl;
-                }
-                wifi_retry_count++;
-                
-            }
+        WiFi.begin();
+        // WiFi.begin(WiFi.SSID(), WiFi.psk()); 
+        if (debug.wifi){
+            Serial << "SSID="<<WiFi.SSID()<<" psk="<<WiFi.psk();
         }
-    }        
+        int wifi_retry_count = 1;
+        int retry_on         = 1000;
+        int retry_for        = 10;
+        while (wifi_retry_count < retry_for && WiFi.status() != WL_CONNECTED) {
+            yield();
+            delay(retry_on);
+            if (debug.wifi)
+                Serial << ".";
+
+            // Make sure you notify if WIFI is not connecting
+            // notify every 20 attempts
+            if (debug.errors && (wifi_retry_count % 20 == 0 )) {
+                Serial
+                    << "wifi ssid: " << WiFi.SSID() << " still NOT connected." << endl
+                    << "Retring for: "
+                    << (wifi_retry_count * retry_on) / 1000 << " seconds." << endl;
+            }
+            wifi_retry_count++;
+            
+        }
+    }
+           
     if (WiFi.status() != WL_CONNECTED)
     {
         setControl("wifi",0);
