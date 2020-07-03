@@ -366,7 +366,7 @@ void CityOS::connectToWiFi(bool useWiFiManager){
         // wifiManager.resetSettings();
         wifiManager.setMinimumSignalQuality(10);
         wifiManager.setConfigPortalTimeout(CONFIG_PORTAL_TIMEOUT); // sets timeout until configuration portal gets turned off
-        // wifiManager.setConnectTimeout(ESP_CONNECT_TIMEOUT); // how long to try to connect for before continuing
+        
         wifiManager.setCaptivePortalEnable(false);
 
         if (debug.wifi) wifiManager.setDebugOutput(true);
