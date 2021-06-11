@@ -69,9 +69,8 @@ void BME_280::interval()
     in.altitude = _bme->readAltitude(SEA_LEVEL_PRESSURE_HPA);
     // Feet = 3.28 * altitudeMeters;
 
-    setSense("air temperature", in.temperature);
-    setSense("air humidity", in.humidity);
-    setSense("air temperature_feel", in.temperature_feel);
+    setSense("DEVICE_TEMPERATURE", in.temperature);    
+    setSense("AIR_PRESSURE", in.pressure);
     // setSense("air pressure", in.pressure);
     // setSense("air altitude", in.altitude);
 } // BME_280::interval
