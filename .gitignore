@@ -6,6 +6,8 @@
 .gcc-flags.json
 
 Air/Air.ino.cpp
+lib/Device/Device.h
 
+.DS_Store
 .vscode
 data/
